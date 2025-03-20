@@ -3,6 +3,7 @@
 import AssetTable from '../../components/assets/AssetTable';
 import AssetCategoryFilter from '../../components/assets/AssetCategoryFilter';
 import { useState } from 'react';
+import Link from 'next/link';
 
 export default function AssetsPage() {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
@@ -20,12 +21,12 @@ export default function AssetsPage() {
             <h2 className="subtitle">View and manage company assets</h2>
           </div>
           <div className="column is-narrow">
-            <a href="/assets/new" className="button is-primary">
+            <Link href="/assets/new" className="button is-primary">
               <span className="icon">
                 <i className="fas fa-plus"></i>
               </span>
               <span>Add New Asset</span>
-            </a>
+            </Link>
           </div>
         </div>
 

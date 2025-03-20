@@ -32,17 +32,17 @@ export default function AssignAssetPage() {
   const router = useRouter();
   const params = useParams();
   const employeeId = params.id as string;
-  
+
   const [employee, setEmployee] = useState<Employee | null>(null);
   const [assets, setAssets] = useState<Asset[]>([]);
   const [filteredAssets, setFilteredAssets] = useState<Asset[]>([]);
   const [selectedAssetId, setSelectedAssetId] = useState('');
-  
+
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState<'success' | 'danger'>('success');
@@ -54,7 +54,7 @@ export default function AssignAssetPage() {
         // Using Promise.all to fetch both data sets in parallel
         const [employeeRes, assetsRes] = await Promise.all([
           fetch(`/api/employees/${employeeId}`),
-          fetch('/api/assets')
+          fetch('/api/assets'),
         ]);
 
         if (!employeeRes.ok) {
@@ -70,24 +70,26 @@ export default function AssignAssetPage() {
 
         const employeeData = await employeeRes.json();
         const assetsData = await assetsRes.json();
-        
+
         // Set employee data
         setEmployee({
           id: employeeData.employee.id,
           employeeId: employeeData.employee.employeeId,
           firstName: employeeData.employee.firstName,
-          lastName: employeeData.employee.lastName
+          lastName: employeeData.employee.lastName,
         });
 
         // Filter assets to only include available ones
         const availableAssets = assetsData.assets.filter(
           (asset: Asset) => asset.status === 'AVAILABLE' || asset.assignedToId === employeeId
         );
-        
+
         setAssets(availableAssets);
         setFilteredAssets(availableAssets);
-      } catch (err: any) {
-        setError(err.message || 'An error occurred while fetching data');
+      } catch (err: unknown) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'An error occurred while fetching data';
+        setError(errorMessage);
       } finally {
         setIsLoading(false);
       }
@@ -104,12 +106,13 @@ export default function AssignAssetPage() {
     }
 
     const searchLower = searchTerm.toLowerCase();
-    const filtered = assets.filter(asset => 
-      asset.name.toLowerCase().includes(searchLower) ||
-      asset.assetTag.toLowerCase().includes(searchLower) ||
-      asset.category.name.toLowerCase().includes(searchLower)
+    const filtered = assets.filter(
+      asset =>
+        asset.name.toLowerCase().includes(searchLower) ||
+        asset.assetTag.toLowerCase().includes(searchLower) ||
+        asset.category.name.toLowerCase().includes(searchLower)
     );
-    
+
     setFilteredAssets(filtered);
   }, [searchTerm, assets]);
 
@@ -127,10 +130,10 @@ export default function AssignAssetPage() {
     try {
       // Get the current assignment status of the selected asset
       const asset = assets.find(a => a.id === selectedAssetId);
-      
+
       // If the asset is already assigned to this employee, we'll unassign it
       const isUnassigning = asset?.assignedToId === employeeId;
-      
+
       // Update the asset with the new assignment
       const response = await fetch(`/api/assets/${selectedAssetId}`, {
         method: 'PUT',
@@ -143,7 +146,7 @@ export default function AssignAssetPage() {
           name: asset?.name,
           assetTag: asset?.assetTag,
           categoryId: asset?.category.id,
-          status: isUnassigning ? 'AVAILABLE' : 'IN_USE'
+          status: isUnassigning ? 'AVAILABLE' : 'IN_USE',
         }),
       });
 
@@ -154,9 +157,9 @@ export default function AssignAssetPage() {
       }
 
       // Show success toast
-      setToastMessage(isUnassigning 
-        ? 'Asset unassigned successfully!' 
-        : 'Asset assigned successfully!');
+      setToastMessage(
+        isUnassigning ? 'Asset unassigned successfully!' : 'Asset assigned successfully!'
+      );
       setToastType('success');
       setShowToast(true);
 
@@ -165,9 +168,11 @@ export default function AssignAssetPage() {
         router.push(`/employees/${employeeId}`);
         router.refresh(); // Refresh the page data
       }, 2000);
-    } catch (err: any) {
-      setError(err.message || 'An error occurred while updating assignment');
-      setToastMessage(err.message || 'An error occurred while updating assignment');
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'An error occurred while updating assignment';
+      setError(errorMessage);
+      setToastMessage(errorMessage);
       setToastType('danger');
       setShowToast(true);
     } finally {
@@ -223,8 +228,10 @@ export default function AssignAssetPage() {
         <div className="columns">
           <div className="column">
             <h1 className="title is-2">Assign Assets</h1>
-            <h2 className="subtitle">Manage asset assignments for {employee?.firstName} {employee?.lastName}</h2>
-            
+            <h2 className="subtitle">
+              Manage asset assignments for {employee?.firstName} {employee?.lastName}
+            </h2>
+
             {error && (
               <div className="notification is-danger">
                 <button className="delete" onClick={() => setError(null)}></button>
@@ -243,7 +250,7 @@ export default function AssignAssetPage() {
                           type="text"
                           placeholder="Search assets by name, tag, or category"
                           value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
+                          onChange={e => setSearchTerm(e.target.value)}
                         />
                         <span className="icon is-small is-left">
                           <i className="fas fa-search"></i>
@@ -251,10 +258,7 @@ export default function AssignAssetPage() {
                       </div>
                       {searchTerm && (
                         <div className="control">
-                          <button 
-                            className="button is-info"
-                            onClick={() => setSearchTerm('')}
-                          >
+                          <button className="button is-info" onClick={() => setSearchTerm('')}>
                             Clear
                           </button>
                         </div>
@@ -288,8 +292,8 @@ export default function AssignAssetPage() {
 
               {filteredAssets.length === 0 ? (
                 <div className="notification is-info is-light">
-                  {searchTerm 
-                    ? 'No matching assets found. Try a different search term.' 
+                  {searchTerm
+                    ? 'No matching assets found. Try a different search term.'
                     : 'There are no available assets to assign.'}
                 </div>
               ) : (
@@ -325,10 +329,14 @@ export default function AssignAssetPage() {
                           <td>{asset.category.name}</td>
                           <td>{asset.location ? asset.location.name : 'Not specified'}</td>
                           <td>
-                            <span className={`tag ${
-                              asset.assignedToId === employeeId ? 'is-primary' : 'is-success'
-                            }`}>
-                              {asset.assignedToId === employeeId ? 'Assigned to this employee' : 'Available'}
+                            <span
+                              className={`tag ${
+                                asset.assignedToId === employeeId ? 'is-primary' : 'is-success'
+                              }`}
+                            >
+                              {asset.assignedToId === employeeId
+                                ? 'Assigned to this employee'
+                                : 'Available'}
                             </span>
                           </td>
                         </tr>
@@ -341,13 +349,9 @@ export default function AssignAssetPage() {
           </div>
         </div>
       </section>
-      
+
       {showToast && (
-        <Toast 
-          message={toastMessage}
-          type={toastType}
-          onClose={() => setShowToast(false)}
-        />
+        <Toast message={toastMessage} type={toastType} onClose={() => setShowToast(false)} />
       )}
     </div>
   );

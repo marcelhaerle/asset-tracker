@@ -6,23 +6,27 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const assetId = searchParams.get('assetId');
     const dueSoon = searchParams.get('dueSoon') === 'true';
-    
+
     const today = new Date();
     const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-    
-    let whereClause: any = {};
-    
+
+    const whereClause: {
+      assetId?: string;
+      nextServiceDate?: { lte: Date };
+      enabled?: boolean;
+    } = {};
+
     if (assetId) {
       whereClause.assetId = assetId;
     }
-    
+
     if (dueSoon) {
       whereClause.nextServiceDate = {
-        lte: endOfMonth
+        lte: endOfMonth,
       };
       whereClause.enabled = true;
     }
-    
+
     const serviceSchedules = await prisma.serviceSchedule.findMany({
       where: whereClause,
       include: {
@@ -30,71 +34,59 @@ export async function GET(request: NextRequest) {
           include: {
             category: true,
             location: true,
-            assignedTo: true
-          }
+            assignedTo: true,
+          },
         },
         serviceRecords: {
           orderBy: {
-            serviceDate: 'desc'
+            serviceDate: 'desc',
           },
-          take: 5
-        }
+          take: 5,
+        },
       },
       orderBy: {
-        nextServiceDate: 'asc'
-      }
+        nextServiceDate: 'asc',
+      },
     });
-    
+
     return NextResponse.json({ serviceSchedules }, { status: 200 });
   } catch (error) {
     console.error('Error fetching service schedules:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch service schedules' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch service schedules' }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     if (!body.assetId || !body.intervalMonths || !body.nextServiceDate) {
       return NextResponse.json(
         { error: 'Asset ID, interval months, and next service date are required' },
         { status: 400 }
       );
     }
-    
+
     // Check if the asset exists
     const asset = await prisma.asset.findUnique({
       where: { id: body.assetId },
-      include: { serviceSchedule: true }
+      include: { serviceSchedule: true },
     });
-    
+
     if (!asset) {
-      return NextResponse.json(
-        { error: 'Asset not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Asset not found' }, { status: 404 });
     }
-    
+
     // Check if the asset already has a service schedule
     if (asset.serviceSchedule) {
-      return NextResponse.json(
-        { error: 'Asset already has a service schedule' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Asset already has a service schedule' }, { status: 400 });
     }
-    
+
     // Validate intervalMonths
     if (![3, 6, 12].includes(body.intervalMonths)) {
-      return NextResponse.json(
-        { error: 'Interval months must be 3, 6, or 12' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Interval months must be 3, 6, or 12' }, { status: 400 });
     }
-    
+
     // Create service schedule
     const newSchedule = await prisma.serviceSchedule.create({
       data: {
@@ -107,22 +99,19 @@ export async function POST(request: NextRequest) {
       },
       include: {
         asset: true,
-        serviceRecords: true
-      }
+        serviceRecords: true,
+      },
     });
-    
+
     return NextResponse.json(
-      { 
-        message: 'Service schedule created successfully', 
-        serviceSchedule: newSchedule 
-      }, 
+      {
+        message: 'Service schedule created successfully',
+        serviceSchedule: newSchedule,
+      },
       { status: 201 }
     );
   } catch (error) {
     console.error('Error creating service schedule:', error);
-    return NextResponse.json(
-      { error: 'Failed to create service schedule' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to create service schedule' }, { status: 500 });
   }
 }

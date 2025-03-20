@@ -25,7 +25,8 @@ export async function LocationList() {
           </p>
           <p className="title is-5 has-text-grey">No locations found</p>
           <p className="subtitle is-6 has-text-grey-light mb-5">
-            You haven't added any locations yet. Add your first location to start tracking assets.
+            You haven&apos;t added any locations yet. Add your first location to start tracking
+            assets.
           </p>
           <Link href="/locations/new" className="button is-primary">
             <span className="icon">

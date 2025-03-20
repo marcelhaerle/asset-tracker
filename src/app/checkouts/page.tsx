@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import CheckoutList from '@/components/checkout/CheckoutList';
 import CheckoutModal from '@/components/checkout/CheckoutModal';
 import Toast from '@/components/Toast';
@@ -24,26 +23,27 @@ export default function CheckoutsPage() {
         },
         body: JSON.stringify(data),
       });
-      
+
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.error || 'Failed to check out asset');
       }
-      
+
       // Show success toast
       setToastMessage('Asset checked out successfully!');
       setToastType('success');
       setShowToast(true);
-      
+
       // Trigger refresh of checkout list
       setCheckoutUpdated(prev => prev + 1);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to check out asset';
       // Show error toast
-      setToastMessage(err.message || 'Failed to check out asset');
+      setToastMessage(errorMessage);
       setToastType('danger');
       setShowToast(true);
-      
+
       throw err;
     }
   };
@@ -65,10 +65,7 @@ export default function CheckoutsPage() {
             <h2 className="subtitle">Manage equipment checkouts and returns</h2>
           </div>
           <div className="column is-narrow">
-            <button 
-              className="button is-primary"
-              onClick={() => setShowCheckoutModal(true)}
-            >
+            <button className="button is-primary" onClick={() => setShowCheckoutModal(true)}>
               <span className="icon">
                 <i className="fas fa-sign-out-alt"></i>
               </span>
@@ -94,34 +91,32 @@ export default function CheckoutsPage() {
 
         {/* Tab content */}
         <div className="box">
-          <CheckoutList 
+          <CheckoutList
             checkoutType={activeTab}
             title={
-              activeTab === 'active' ? 'Active Checkouts' : 
-              activeTab === 'returned' ? 'Returned Assets' : 
-              'All Checkout Records'
+              activeTab === 'active'
+                ? 'Active Checkouts'
+                : activeTab === 'returned'
+                  ? 'Returned Assets'
+                  : 'All Checkout Records'
             }
             key={`checkout-list-${activeTab}-${checkoutUpdated}`}
             onCheckoutUpdated={handleCheckoutUpdated}
           />
         </div>
       </section>
-      
+
       {/* Checkout Modal */}
-      <CheckoutModal 
+      <CheckoutModal
         isOpen={showCheckoutModal}
         onClose={() => setShowCheckoutModal(false)}
         onCheckout={handleCheckout}
         checkoutType="asset"
       />
-      
+
       {/* Toast Notification */}
       {showToast && (
-        <Toast 
-          message={toastMessage}
-          type={toastType}
-          onClose={() => setShowToast(false)}
-        />
+        <Toast message={toastMessage} type={toastType} onClose={() => setShowToast(false)} />
       )}
     </div>
   );

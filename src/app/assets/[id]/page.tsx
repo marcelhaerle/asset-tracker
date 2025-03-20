@@ -111,8 +111,9 @@ export default function AssetDetailsPage() {
 
         const data = await response.json();
         setAsset(data.asset);
-      } catch (err: any) {
-        setError(err.message || 'An error occurred while fetching asset data');
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+        setError(errorMessage);
       } finally {
         setIsLoading(false);
       }
@@ -178,7 +179,7 @@ export default function AssetDetailsPage() {
                 </p>
                 <p className="title is-4">Asset Not Found</p>
                 <p className="mb-5">
-                  The asset you're looking for doesn't exist or has been removed.
+                  The asset you&apos;re looking for doesn&apos;t exist or has been removed.
                 </p>
                 <button onClick={() => router.push('/assets')} className="button is-primary">
                   Return to Assets
@@ -233,13 +234,13 @@ export default function AssetDetailsPage() {
           {/* Main asset details */}
           <div className="column is-two-thirds">
             <AssetDetails asset={asset} />
-            <AssetServiceSchedule 
-              asset={asset} 
+            <AssetServiceSchedule
+              asset={asset}
               onScheduleUpdated={() => setRefreshKey(prev => prev + 1)}
             />
             <AssetMaintenanceHistory maintenanceRecords={asset.maintenanceRecords} />
-            <AssetCheckoutHistory 
-              asset={asset} 
+            <AssetCheckoutHistory
+              asset={asset}
               onCheckoutUpdated={() => setRefreshKey(prev => prev + 1)}
             />
           </div>

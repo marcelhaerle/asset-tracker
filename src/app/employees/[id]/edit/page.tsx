@@ -5,18 +5,6 @@ import { useParams, useRouter } from 'next/navigation';
 
 import Toast from '@/components/Toast';
 
-type Employee = {
-  id: string;
-  employeeId: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  department: string | null;
-  position: string | null;
-  phone: string | null;
-  isActive: boolean;
-};
-
 export default function EditEmployeePage() {
   const router = useRouter();
   const params = useParams();
@@ -70,8 +58,10 @@ export default function EditEmployeePage() {
           phone: employee.phone || '',
           isActive: employee.isActive,
         });
-      } catch (err: any) {
-        setError(err.message || 'An error occurred while fetching employee data');
+      } catch (err: unknown) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'An error occurred while fetching employee data';
+        setError(errorMessage);
       } finally {
         setIsLoading(false);
       }
@@ -138,9 +128,11 @@ export default function EditEmployeePage() {
         router.push(`/employees/${employeeId}`);
         router.refresh(); // Refresh the page data
       }, 2000);
-    } catch (err: any) {
-      setError(err.message || 'An error occurred while updating the employee');
-      setToastMessage(err.message || 'An error occurred while updating the employee');
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'An error occurred while updating the employee';
+      setError(errorMessage);
+      setToastMessage(errorMessage);
       setToastType('danger');
       setShowToast(true);
     } finally {

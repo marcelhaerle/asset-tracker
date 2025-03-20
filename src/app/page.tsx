@@ -10,39 +10,45 @@ export default async function Home() {
   });
 
   const categories = await prisma.category.findMany();
-  
+
   // Get service schedules that are due in the current month
   const today = new Date();
   const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-  
+
   const dueServiceSchedules = await prisma.serviceSchedule.findMany({
     where: {
       nextServiceDate: {
-        lte: endOfMonth
+        lte: endOfMonth,
       },
-      enabled: true
+      enabled: true,
     },
     include: {
       asset: {
         include: {
           category: true,
           location: true,
-        }
-      }
+        },
+      },
     },
     orderBy: {
-      nextServiceDate: 'asc'
-    }
+      nextServiceDate: 'asc',
+    },
   });
 
   const getStatusClassName = (status: string) => {
     switch (status) {
-      case 'AVAILABLE': return 'is-available';
-      case 'IN_USE': return 'is-in-use';
-      case 'IN_REPAIR': return 'is-in-repair';
-      case 'RETIRED': return 'is-retired';
-      case 'LOST': return 'is-lost';
-      default: return '';
+      case 'AVAILABLE':
+        return 'is-available';
+      case 'IN_USE':
+        return 'is-in-use';
+      case 'IN_REPAIR':
+        return 'is-in-repair';
+      case 'RETIRED':
+        return 'is-retired';
+      case 'LOST':
+        return 'is-lost';
+      default:
+        return '';
     }
   };
 
@@ -52,10 +58,10 @@ export default async function Home() {
         <div className="columns">
           <div className="column">
             <h1 className="title is-2">Company Asset Tracker</h1>
-            <h2 className="subtitle">Manage and track your company's physical assets</h2>
+            <h2 className="subtitle">Manage and track your company&apos;s physical assets</h2>
           </div>
         </div>
-        
+
         {dueServiceSchedules.length > 0 && (
           <div className="block">
             <div className="notification is-warning">
@@ -77,18 +83,29 @@ export default async function Home() {
                     </tr>
                   </thead>
                   <tbody>
-                    {dueServiceSchedules.map((schedule) => (
+                    {dueServiceSchedules.map(schedule => (
                       <tr key={schedule.id}>
-                        <td>{schedule.asset.name} ({schedule.asset.assetTag})</td>
                         <td>
-                          <strong className={new Date(schedule.nextServiceDate) < new Date() ? 'has-text-danger' : ''}>
+                          {schedule.asset.name} ({schedule.asset.assetTag})
+                        </td>
+                        <td>
+                          <strong
+                            className={
+                              new Date(schedule.nextServiceDate) < new Date()
+                                ? 'has-text-danger'
+                                : ''
+                            }
+                          >
                             {new Date(schedule.nextServiceDate).toLocaleDateString()}
                           </strong>
                         </td>
                         <td>{schedule.asset.category.name}</td>
                         <td>{schedule.asset.location?.name || '-'}</td>
                         <td>
-                          <a href={`/assets/${schedule.asset.id}`} className="button is-small is-info">
+                          <a
+                            href={`/assets/${schedule.asset.id}`}
+                            className="button is-small is-info"
+                          >
                             View Asset
                           </a>
                         </td>
@@ -100,7 +117,7 @@ export default async function Home() {
             </div>
           </div>
         )}
-        
+
         <div className="block mt-6">
           <div className="box">
             <h3 className="title is-4">Asset Overview</h3>
@@ -137,7 +154,7 @@ export default async function Home() {
           <div className="box">
             <h3 className="title is-4">Asset Categories</h3>
             <div className="columns is-multiline">
-              {categories.map((category) => (
+              {categories.map(category => (
                 <div key={category.id} className="column is-one-quarter">
                   <div className="card">
                     <div className="card-content">
@@ -172,7 +189,7 @@ export default async function Home() {
                   </tr>
                 </thead>
                 <tbody>
-                  {assets.map((asset) => (
+                  {assets.map(asset => (
                     <tr key={asset.id}>
                       <td>{asset.assetTag}</td>
                       <td>{asset.name}</td>
@@ -184,7 +201,9 @@ export default async function Home() {
                       </td>
                       <td>{asset.location?.name || '-'}</td>
                       <td>
-                        {asset.assignedTo ? `${asset.assignedTo.firstName} ${asset.assignedTo.lastName}` : '-'}
+                        {asset.assignedTo
+                          ? `${asset.assignedTo.firstName} ${asset.assignedTo.lastName}`
+                          : '-'}
                       </td>
                     </tr>
                   ))}

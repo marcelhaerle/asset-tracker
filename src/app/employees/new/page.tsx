@@ -83,9 +83,11 @@ export default function NewEmployeePage() {
         router.push('/employees');
         router.refresh(); // Refresh the page data
       }, 2000);
-    } catch (err: any) {
-      setError(err.message || 'An error occurred while creating the employee');
-      setToastMessage(err.message || 'An error occurred while creating the employee');
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'An error occurred while creating the employee';
+      setError(errorMessage);
+      setToastMessage(errorMessage);
       setToastType('danger');
       setShowToast(true);
     } finally {

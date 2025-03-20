@@ -152,8 +152,10 @@ export default function NewAssetPage() {
         router.push('/assets');
         router.refresh(); // Refresh the page data
       }, 2000);
-    } catch (err: any) {
-      setError(err.message || 'An error occurred while creating the asset');
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'An error occurred while creating the asset';
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -251,7 +253,7 @@ export default function NewAssetPage() {
                           placeholder="e.g. SN12345678"
                         />
                       </div>
-                      <p className="help">Manufacturer's serial number</p>
+                      <p className="help">Manufacturer&apos;s serial number</p>
                     </div>
 
                     <div className="field">

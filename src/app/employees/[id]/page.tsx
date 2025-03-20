@@ -78,8 +78,10 @@ export default function EmployeeDetailsPage() {
 
         const data = await response.json();
         setEmployee(data.employee);
-      } catch (err: any) {
-        setError(err.message || 'An error occurred while fetching employee data');
+      } catch (err: unknown) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'An error occurred while fetching employee data';
+        setError(errorMessage);
       } finally {
         setIsLoading(false);
       }
@@ -145,7 +147,7 @@ export default function EmployeeDetailsPage() {
                 </p>
                 <p className="title is-4">Employee Not Found</p>
                 <p className="mb-5">
-                  The employee you're looking for doesn't exist or has been removed.
+                  The employee you&apos;re looking for doesn&apos;t exist or has been removed.
                 </p>
                 <button onClick={() => router.push('/employees')} className="button is-primary">
                   Return to Employees
@@ -188,12 +190,12 @@ export default function EmployeeDetailsPage() {
                   </span>
                   <span>Assign Asset</span>
                 </Link>
-                <EmployeeCheckoutButton 
+                <EmployeeCheckoutButton
                   employee={{
                     id: employee.id,
                     firstName: employee.firstName,
                     lastName: employee.lastName,
-                    employeeId: employee.employeeId
+                    employeeId: employee.employeeId,
                   }}
                   onCheckoutUpdated={() => setRefreshKey(prev => prev + 1)}
                 />
@@ -225,7 +227,7 @@ export default function EmployeeDetailsPage() {
               assignedAssets={employee.assignedAssets}
             />
 
-            <EmployeeCheckoutHistory 
+            <EmployeeCheckoutHistory
               checkoutHistory={employee.checkoutHistory}
               onCheckoutUpdated={() => setRefreshKey(prev => prev + 1)}
             />

@@ -6,6 +6,7 @@ type Asset = {
   id: string;
   name: string;
   assetTag: string;
+  status: string;
   category: {
     name: string;
   };
@@ -33,13 +34,13 @@ type CheckoutFormData = {
   notes: string;
 };
 
-export default function CheckoutModal({ 
-  isOpen, 
-  onClose, 
-  onCheckout, 
-  asset = null, 
+export default function CheckoutModal({
+  isOpen,
+  onClose,
+  onCheckout,
+  asset = null,
   employee = null,
-  checkoutType
+  checkoutType,
 }: CheckoutModalProps) {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -50,7 +51,7 @@ export default function CheckoutModal({
   const [formData, setFormData] = useState<CheckoutFormData>({
     assetId: asset?.id || '',
     employeeId: employee?.id || '',
-    notes: ''
+    notes: '',
   });
 
   // Fetch assets and employees
@@ -60,16 +61,16 @@ export default function CheckoutModal({
     const fetchData = async () => {
       setIsLoading(true);
       setError(null);
-      
+
       try {
         // If we already have an asset, we don't need to fetch assets
         const assetPromise = asset ? Promise.resolve(null) : fetch('/api/assets?status=AVAILABLE');
-        
+
         // If we already have an employee, we don't need to fetch employees
         const employeePromise = employee ? Promise.resolve(null) : fetch('/api/employees');
-        
+
         const [assetRes, employeeRes] = await Promise.all([assetPromise, employeePromise]);
-        
+
         // Process assets data if we needed to fetch it
         if (!asset && assetRes) {
           if (!assetRes.ok) {
@@ -77,9 +78,9 @@ export default function CheckoutModal({
           }
           const assetData = await assetRes.json();
           // Only include available assets
-          setAssets(assetData.assets.filter((a: any) => a.status === 'AVAILABLE'));
+          setAssets(assetData.assets.filter((a: Asset) => a.status === 'AVAILABLE'));
         }
-        
+
         // Process employees data if we needed to fetch it
         if (!employee && employeeRes) {
           if (!employeeRes.ok) {
@@ -88,18 +89,20 @@ export default function CheckoutModal({
           const employeeData = await employeeRes.json();
           setEmployees(employeeData.employees);
         }
-        
+
         // If we have a pre-selected asset, set it in form data
         if (asset) {
           setFormData(prev => ({ ...prev, assetId: asset.id }));
         }
-        
+
         // If we have a pre-selected employee, set it in form data
         if (employee) {
           setFormData(prev => ({ ...prev, employeeId: employee.id }));
         }
-      } catch (err: any) {
-        setError(err.message || 'An error occurred while fetching data');
+      } catch (err: unknown) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'An error occurred while fetching data';
+        setError(errorMessage);
       } finally {
         setIsLoading(false);
       }
@@ -114,7 +117,7 @@ export default function CheckoutModal({
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -122,21 +125,22 @@ export default function CheckoutModal({
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
-    
+
     try {
       await onCheckout(formData);
-      
+
       // Clear form data on successful submission
       setFormData({
         assetId: asset?.id || '',
         employeeId: employee?.id || '',
-        notes: ''
+        notes: '',
       });
-      
+
       // Close the modal
       onClose();
-    } catch (err: any) {
-      setError(err.message || 'An error occurred during checkout');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred during checkout';
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -148,15 +152,9 @@ export default function CheckoutModal({
       <div className="modal-card">
         <header className="modal-card-head">
           <p className="modal-card-title">
-            {checkoutType === 'asset' 
-              ? 'Check Out Asset'
-              : 'Check Out Asset to Employee'}
+            {checkoutType === 'asset' ? 'Check Out Asset' : 'Check Out Asset to Employee'}
           </p>
-          <button 
-            className="delete" 
-            aria-label="close" 
-            onClick={onClose}
-          ></button>
+          <button className="delete" aria-label="close" onClick={onClose}></button>
         </header>
         <section className="modal-card-body">
           {error && (
@@ -165,7 +163,7 @@ export default function CheckoutModal({
               {error}
             </div>
           )}
-          
+
           {isLoading ? (
             <div className="has-text-centered p-4">
               <span className="icon is-large">
@@ -201,18 +199,20 @@ export default function CheckoutModal({
                   )}
                 </div>
               )}
-              
+
               {/* Display selected asset info if an asset is pre-selected */}
               {asset && (
                 <div className="field">
                   <label className="label">Asset</label>
                   <div className="box p-3">
                     <p className="is-size-5">{asset.name}</p>
-                    <p className="is-size-6 has-text-grey">{asset.assetTag} | {asset.category.name}</p>
+                    <p className="is-size-6 has-text-grey">
+                      {asset.assetTag} | {asset.category.name}
+                    </p>
                   </div>
                 </div>
               )}
-              
+
               {/* Employee selection - only show if no employee is pre-selected */}
               {!employee && (
                 <div className="field mt-4">
@@ -234,23 +234,23 @@ export default function CheckoutModal({
                       </select>
                     </div>
                   </div>
-                  {employees.length === 0 && (
-                    <p className="help is-warning">No employees found.</p>
-                  )}
+                  {employees.length === 0 && <p className="help is-warning">No employees found.</p>}
                 </div>
               )}
-              
+
               {/* Display selected employee info if an employee is pre-selected */}
               {employee && (
                 <div className="field mt-3">
                   <label className="label">Employee</label>
                   <div className="box p-3">
-                    <p className="is-size-5">{employee.firstName} {employee.lastName}</p>
+                    <p className="is-size-5">
+                      {employee.firstName} {employee.lastName}
+                    </p>
                     <p className="is-size-6 has-text-grey">Employee ID: {employee.employeeId}</p>
                   </div>
                 </div>
               )}
-              
+
               {/* Notes for checkout */}
               <div className="field mt-4">
                 <label className="label">Notes</label>
@@ -269,7 +269,7 @@ export default function CheckoutModal({
           )}
         </section>
         <footer className="modal-card-foot">
-          <button 
+          <button
             className={`button is-primary ${isSubmitting ? 'is-loading' : ''}`}
             onClick={handleSubmit}
             disabled={isLoading || isSubmitting || !formData.assetId || !formData.employeeId}
@@ -279,7 +279,9 @@ export default function CheckoutModal({
             </span>
             <span>Check Out</span>
           </button>
-          <button className="button" onClick={onClose}>Cancel</button>
+          <button className="button" onClick={onClose}>
+            Cancel
+          </button>
         </footer>
       </div>
     </div>

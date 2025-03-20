@@ -40,45 +40,47 @@ export default function CheckoutList({
   employeeId,
   assetId,
   limit,
-  onCheckoutUpdated
+  onCheckoutUpdated,
 }: CheckoutListProps) {
   const [checkouts, setCheckouts] = useState<CheckoutRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filteredCheckouts, setFilteredCheckouts] = useState<CheckoutRecord[]>([]);
-  
+
   const [showCheckinModal, setShowCheckinModal] = useState(false);
   const [selectedCheckout, setSelectedCheckout] = useState<CheckoutRecord | null>(null);
-  
+
   // Fetch checkouts
   useEffect(() => {
     const fetchCheckouts = async () => {
       setIsLoading(true);
       setError(null);
-      
+
       try {
         // Basic endpoint
         let endpoint = '/api/checkouts';
-        
+
         // Add query parameters if needed
         const params = new URLSearchParams();
         if (employeeId) params.append('employeeId', employeeId);
         if (assetId) params.append('assetId', assetId);
         if (limit) params.append('limit', limit.toString());
-        
+
         const queryString = params.toString();
         if (queryString) endpoint += `?${queryString}`;
-        
+
         const response = await fetch(endpoint);
-        
+
         if (!response.ok) {
           throw new Error('Failed to fetch checkout records');
         }
-        
+
         const data = await response.json();
         setCheckouts(data.checkoutRecords);
-      } catch (err: any) {
-        setError(err.message || 'An error occurred while fetching checkout records');
+      } catch (err: unknown) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'An error occurred while fetching checkout records';
+        setError(errorMessage);
       } finally {
         setIsLoading(false);
       }
@@ -86,7 +88,7 @@ export default function CheckoutList({
 
     fetchCheckouts();
   }, [employeeId, assetId, limit]);
-  
+
   // Filter checkouts based on type
   useEffect(() => {
     if (checkoutType === 'all') {
@@ -97,7 +99,7 @@ export default function CheckoutList({
       setFilteredCheckouts(checkouts.filter(checkout => checkout.returnedAt));
     }
   }, [checkouts, checkoutType]);
-  
+
   // Handle check-in
   const handleCheckIn = async (data: { checkoutId: string; notes: string }) => {
     try {
@@ -108,15 +110,15 @@ export default function CheckoutList({
         },
         body: JSON.stringify({
           action: 'check-in',
-          notes: data.notes
+          notes: data.notes,
         }),
       });
-      
+
       if (!response.ok) {
         const result = await response.json();
         throw new Error(result.error || 'Failed to check in asset');
       }
-      
+
       // Refresh the list
       if (onCheckoutUpdated) {
         onCheckoutUpdated();
@@ -128,23 +130,25 @@ export default function CheckoutList({
           setCheckouts(updatedData.checkoutRecords);
         }
       }
-    } catch (err: any) {
-      throw new Error(err.message || 'An error occurred while checking in the asset');
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'An error occurred while checking in the asset';
+      throw new Error(errorMessage);
     }
   };
-  
+
   const openCheckinModal = (checkout: CheckoutRecord) => {
     setSelectedCheckout(checkout);
     setShowCheckinModal(true);
   };
-  
+
   // Format date
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'Not returned';
     return new Date(dateString).toLocaleDateString(undefined, {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
@@ -183,7 +187,7 @@ export default function CheckoutList({
   return (
     <div>
       <h3 className="title is-4 mb-4">{title}</h3>
-      
+
       <div className="table-container">
         <table className="table is-fullwidth is-striped is-hoverable">
           <thead>
@@ -220,7 +224,7 @@ export default function CheckoutList({
                 <td>{checkout.notes || '-'}</td>
                 <td>
                   {!checkout.returnedAt ? (
-                    <button 
+                    <button
                       className="button is-small is-primary"
                       onClick={() => openCheckinModal(checkout)}
                     >
@@ -238,7 +242,7 @@ export default function CheckoutList({
           </tbody>
         </table>
       </div>
-      
+
       {/* Check-in Modal */}
       <CheckinModal
         isOpen={showCheckinModal}

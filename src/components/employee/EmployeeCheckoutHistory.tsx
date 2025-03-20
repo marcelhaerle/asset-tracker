@@ -21,6 +21,25 @@ type CheckoutHistory = {
   };
 };
 
+type CheckoutRecord = {
+  id: string;
+  checkedOutAt: string;
+  asset: {
+    id: string;
+    name: string;
+    assetTag: string;
+    category: {
+      name: string;
+    };
+  };
+  employee: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    employeeId: string;
+  };
+};
+
 type EmployeeCheckoutHistoryProps = {
   checkoutHistory: CheckoutHistory[];
   onCheckoutUpdated?: () => void;
@@ -28,10 +47,10 @@ type EmployeeCheckoutHistoryProps = {
 
 export default function EmployeeCheckoutHistory({
   checkoutHistory,
-  onCheckoutUpdated
+  onCheckoutUpdated,
 }: EmployeeCheckoutHistoryProps) {
   const [showCheckinModal, setShowCheckinModal] = useState(false);
-  const [selectedCheckout, setSelectedCheckout] = useState<any>(null);
+  const [selectedCheckout, setSelectedCheckout] = useState<CheckoutRecord | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState<'success' | 'danger'>('success');
@@ -40,7 +59,7 @@ export default function EmployeeCheckoutHistory({
     if (!dateString) return 'Not specified';
     return new Date(dateString).toLocaleDateString();
   };
-  
+
   // Handle checkin
   const handleCheckin = async (data: { checkoutId: string; notes: string }) => {
     try {
@@ -51,35 +70,36 @@ export default function EmployeeCheckoutHistory({
         },
         body: JSON.stringify({
           action: 'check-in',
-          notes: data.notes
+          notes: data.notes,
         }),
       });
-      
+
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.error || 'Failed to check in asset');
       }
-      
+
       // Show success toast
       setToastMessage('Asset checked in successfully!');
       setToastType('success');
       setShowToast(true);
-      
+
       // Notify parent component to refresh employee data
       if (onCheckoutUpdated) {
         onCheckoutUpdated();
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to check in asset';
       // Show error toast
-      setToastMessage(err.message || 'Failed to check in asset');
+      setToastMessage(errorMessage);
       setToastType('danger');
       setShowToast(true);
-      
+
       throw err;
     }
   };
-  
+
   const openCheckinModal = (checkout: CheckoutHistory) => {
     // Format checkout record for the check-in modal
     setSelectedCheckout({
@@ -90,15 +110,15 @@ export default function EmployeeCheckoutHistory({
         name: checkout.asset.name,
         assetTag: checkout.asset.assetTag,
         category: {
-          name: checkout.asset.category.name
-        }
+          name: checkout.asset.category.name,
+        },
       },
       employee: {
         id: '', // The employee ID will be filled by the calling component
         firstName: '',
         lastName: '',
-        employeeId: ''
-      }
+        employeeId: '',
+      },
     });
     setShowCheckinModal(true);
   };
@@ -109,7 +129,9 @@ export default function EmployeeCheckoutHistory({
         <h3 className="title is-4 mb-4">Checkout History</h3>
 
         {checkoutHistory.length === 0 ? (
-          <div className="notification is-info is-light">No checkout history for this employee.</div>
+          <div className="notification is-info is-light">
+            No checkout history for this employee.
+          </div>
         ) : (
           <div className="table-container">
             <table className="table is-fullwidth is-striped is-hoverable">
@@ -137,7 +159,7 @@ export default function EmployeeCheckoutHistory({
                     <td>{record.notes || '-'}</td>
                     <td>
                       {!record.returnedAt ? (
-                        <button 
+                        <button
                           className="button is-small is-primary"
                           onClick={() => openCheckinModal(record)}
                         >
@@ -157,7 +179,7 @@ export default function EmployeeCheckoutHistory({
           </div>
         )}
       </div>
-      
+
       {/* Check-in Modal */}
       {selectedCheckout && (
         <CheckinModal
@@ -167,14 +189,10 @@ export default function EmployeeCheckoutHistory({
           checkoutRecord={selectedCheckout}
         />
       )}
-      
+
       {/* Toast Notification */}
       {showToast && (
-        <Toast 
-          message={toastMessage}
-          type={toastType}
-          onClose={() => setShowToast(false)}
-        />
+        <Toast message={toastMessage} type={toastType} onClose={() => setShowToast(false)} />
       )}
     </>
   );

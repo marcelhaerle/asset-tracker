@@ -22,38 +22,6 @@ type Employee = {
   employeeId: string;
 };
 
-type AssetWithRelations = {
-  id: string;
-  assetTag: string;
-  name: string;
-  serialNumber: string | null;
-  description: string | null;
-  model: string | null;
-  manufacturer: string | null;
-  purchaseDate: string | null;
-  purchasePrice: number | null;
-  expectedLifespan: number | null;
-  status: string;
-  notes: string | null;
-  categoryId: string;
-  locationId: string | null;
-  assignedToId: string | null;
-  category: {
-    id: string;
-    name: string;
-  };
-  location: {
-    id: string;
-    name: string;
-  } | null;
-  assignedTo: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    employeeId: string;
-  } | null;
-};
-
 export default function EditAssetPage() {
   const router = useRouter();
   const params = useParams();
@@ -61,7 +29,6 @@ export default function EditAssetPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState<'success' | 'danger'>('success');
@@ -150,9 +117,11 @@ export default function EditAssetPage() {
         setCategories(categoriesData.categories || []);
         setLocations(locationsData.locations || []);
         setEmployees(employeesData.employees || []);
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'An error occurred while fetching data';
         console.error('Error fetching data:', err);
-        setError(err.message || 'An error occurred while fetching data');
+        setError(errorMessage);
       } finally {
         setIsLoading(false);
       }
@@ -207,9 +176,11 @@ export default function EditAssetPage() {
         router.push(`/assets/${assetId}`);
         router.refresh(); // Refresh the page data
       }, 2000);
-    } catch (err: any) {
-      setError(err.message || 'An error occurred while updating the asset');
-      setToastMessage(err.message || 'An error occurred while updating the asset');
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'An error occurred while updating the asset';
+      setError(errorMessage);
+      setToastMessage(errorMessage);
       setToastType('danger');
       setShowToast(true);
     } finally {
@@ -300,7 +271,7 @@ export default function EditAssetPage() {
                       placeholder="e.g. SN12345678"
                     />
                   </div>
-                  <p className="help">Manufacturer's serial number</p>
+                  <p className="help">Manufacturer&aops;s serial number</p>
                 </div>
 
                 <div className="field">

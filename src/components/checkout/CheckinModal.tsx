@@ -33,56 +33,55 @@ type CheckinFormData = {
   notes: string;
 };
 
-export default function CheckinModal({ 
-  isOpen, 
-  onClose, 
-  onCheckin, 
-  checkoutRecord
+export default function CheckinModal({
+  isOpen,
+  onClose,
+  onCheckin,
+  checkoutRecord,
 }: CheckinModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<CheckinFormData>({
     checkoutId: checkoutRecord?.id || '',
-    notes: ''
+    notes: '',
   });
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!checkoutRecord) {
       setError('No checkout record provided');
       return;
     }
-    
+
     setIsSubmitting(true);
     setError(null);
-    
+
     try {
       await onCheckin({
         ...formData,
-        checkoutId: checkoutRecord.id
+        checkoutId: checkoutRecord.id,
       });
-      
+
       // Clear form data on successful submission
       setFormData({
         checkoutId: '',
-        notes: ''
+        notes: '',
       });
-      
+
       // Close the modal
       onClose();
-    } catch (err: any) {
-      setError(err.message || 'An error occurred during check in');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred during check in';
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -95,7 +94,7 @@ export default function CheckinModal({
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
@@ -105,11 +104,7 @@ export default function CheckinModal({
       <div className="modal-card">
         <header className="modal-card-head">
           <p className="modal-card-title">Check In Asset</p>
-          <button 
-            className="delete" 
-            aria-label="close" 
-            onClick={onClose}
-          ></button>
+          <button className="delete" aria-label="close" onClick={onClose}></button>
         </header>
         <section className="modal-card-body">
           {error && (
@@ -118,11 +113,9 @@ export default function CheckinModal({
               {error}
             </div>
           )}
-          
+
           {!checkoutRecord ? (
-            <div className="notification is-warning">
-              No checkout record selected.
-            </div>
+            <div className="notification is-warning">No checkout record selected.</div>
           ) : (
             <form onSubmit={handleSubmit}>
               {/* Asset details */}
@@ -135,7 +128,7 @@ export default function CheckinModal({
                   </p>
                 </div>
               </div>
-              
+
               {/* Employee details */}
               <div className="field mt-3">
                 <label className="label">Checked Out To</label>
@@ -148,13 +141,13 @@ export default function CheckinModal({
                   </p>
                 </div>
               </div>
-              
+
               {/* Checkout date */}
               <div className="field mt-3">
                 <label className="label">Checked Out On</label>
                 <p>{formatDate(checkoutRecord.checkedOutAt)}</p>
               </div>
-              
+
               {/* Return notes */}
               <div className="field mt-4">
                 <label className="label">Return Notes</label>
@@ -173,7 +166,7 @@ export default function CheckinModal({
           )}
         </section>
         <footer className="modal-card-foot">
-          <button 
+          <button
             className={`button is-primary ${isSubmitting ? 'is-loading' : ''}`}
             onClick={handleSubmit}
             disabled={isSubmitting || !checkoutRecord}
@@ -183,7 +176,9 @@ export default function CheckinModal({
             </span>
             <span>Check In</span>
           </button>
-          <button className="button" onClick={onClose}>Cancel</button>
+          <button className="button" onClick={onClose}>
+            Cancel
+          </button>
         </footer>
       </div>
     </div>

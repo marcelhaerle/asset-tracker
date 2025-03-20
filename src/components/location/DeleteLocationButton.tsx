@@ -4,10 +4,17 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Toast from '@/components/Toast';
 
+type Asset = {
+  id: string;
+  assetTag: string;
+  name: string;
+  status: string;
+};
+
 type LocationWithAssets = {
   id: string;
   name: string;
-  assets: any[];
+  assets: Asset[];
 };
 
 export default function DeleteLocationButton({ location }: { location: LocationWithAssets }) {
@@ -54,8 +61,9 @@ export default function DeleteLocationButton({ location }: { location: LocationW
       setIsModalOpen(false);
       setShowSuccessToast(true);
       router.refresh();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
     } finally {
       setIsDeleting(false);
     }

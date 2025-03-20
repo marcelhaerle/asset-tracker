@@ -73,8 +73,10 @@ export default function DeleteEmployeeButton({
         router.push('/employees');
         router.refresh();
       }
-    } catch (err: any) {
-      setError(err.message || 'An error occurred while deleting the employee');
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'An error occurred while deleting the employee';
+      setError(errorMessage);
     } finally {
       setIsDeleting(false);
     }

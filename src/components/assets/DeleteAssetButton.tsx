@@ -68,8 +68,10 @@ export default function DeleteAssetButton({
         router.push('/assets');
         router.refresh();
       }
-    } catch (err: any) {
-      setError(err.message || 'An error occurred while deleting the asset');
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'An error occurred while deleting the asset';
+      setError(errorMessage);
     } finally {
       setIsDeleting(false);
     }
