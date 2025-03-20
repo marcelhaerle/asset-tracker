@@ -1,5 +1,6 @@
 import { Category } from '@prisma/client';
 import DeleteLocationButton from './DeleteLocationButton';
+import Link from 'next/link';
 
 type AssetwithCategory = {
   id: string;
@@ -50,12 +51,12 @@ export default function LocationListEntry({ location }: LocationListEntryProps) 
             </div>
           </div>
           <div className="buttons">
-            <a href={`/locations/edit/${location.id}`} className="button is-info is-small">
+            <Link href={`/locations/edit/${location.id}`} className="button is-info is-small">
               <span className="icon is-small">
                 <i className="fas fa-edit"></i>
               </span>
               <span>Edit</span>
-            </a>
+            </Link>
             <DeleteLocationButton location={location} />
           </div>
         </div>
