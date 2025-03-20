@@ -22,6 +22,9 @@ export default async function Nav() {
           <Link className="navbar-item" href="/locations">
             Locations
           </Link>
+          <Link className="navbar-item" href="/checkouts">
+            Checkouts
+          </Link>
         </div>
       </div>
     </nav>

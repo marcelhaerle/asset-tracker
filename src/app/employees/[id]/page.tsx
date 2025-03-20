@@ -8,6 +8,7 @@ import DeleteEmployeeButton from '@/components/employee/DeleteEmployeeButton';
 import EmployeeAssignedAssets from '@/components/employee/EmployeeAssignedAssets';
 import EmployeeCheckoutHistory from '@/components/employee/EmployeeCheckoutHistory';
 import EmployeeDetails from '@/components/employee/EmployeeDetails';
+import EmployeeCheckoutButton from '@/components/employee/EmployeeCheckoutButton';
 
 type EmployeeWithRelations = {
   id: string;
@@ -58,6 +59,7 @@ export default function EmployeeDetailsPage() {
   const [employee, setEmployee] = useState<EmployeeWithRelations | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     const fetchEmployee = async () => {
@@ -84,7 +86,7 @@ export default function EmployeeDetailsPage() {
     };
 
     fetchEmployee();
-  }, [employeeId]);
+  }, [employeeId, refreshKey]);
 
   // Loading state
   if (isLoading) {
@@ -186,6 +188,15 @@ export default function EmployeeDetailsPage() {
                   </span>
                   <span>Assign Asset</span>
                 </Link>
+                <EmployeeCheckoutButton 
+                  employee={{
+                    id: employee.id,
+                    firstName: employee.firstName,
+                    lastName: employee.lastName,
+                    employeeId: employee.employeeId
+                  }}
+                  onCheckoutUpdated={() => setRefreshKey(prev => prev + 1)}
+                />
                 <DeleteEmployeeButton
                   employeeId={employeeId}
                   firstName={employee.firstName}
@@ -214,7 +225,10 @@ export default function EmployeeDetailsPage() {
               assignedAssets={employee.assignedAssets}
             />
 
-            <EmployeeCheckoutHistory checkoutHistory={employee.checkoutHistory} />
+            <EmployeeCheckoutHistory 
+              checkoutHistory={employee.checkoutHistory}
+              onCheckoutUpdated={() => setRefreshKey(prev => prev + 1)}
+            />
           </div>
         </div>
       </section>

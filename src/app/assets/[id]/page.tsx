@@ -71,6 +71,7 @@ export default function AssetDetailsPage() {
   const [asset, setAsset] = useState<AssetWithRelations | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     const fetchAsset = async () => {
@@ -97,7 +98,7 @@ export default function AssetDetailsPage() {
     };
 
     fetchAsset();
-  }, [assetId]);
+  }, [assetId, refreshKey]);
 
   // Loading state
   if (isLoading) {
@@ -212,7 +213,10 @@ export default function AssetDetailsPage() {
           <div className="column is-two-thirds">
             <AssetDetails asset={asset} />
             <AssetMaintenanceHistory maintenanceRecords={asset.maintenanceRecords} />
-            <AssetCheckoutHistory asset={asset} />
+            <AssetCheckoutHistory 
+              asset={asset} 
+              onCheckoutUpdated={() => setRefreshKey(prev => prev + 1)}
+            />
           </div>
 
           {/* Sidebar */}
