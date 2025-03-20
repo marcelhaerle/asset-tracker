@@ -1,8 +1,11 @@
-import { EmployeeList, EmployeeListFallback } from '@/components/employee/EmployeeList';
 import Link from 'next/link';
 import { Suspense } from 'react';
 
-export default async function EmployeesPage() {
+import { EmployeeList, EmployeeListFallback } from '@/components/employee/EmployeeList';
+
+export const dynamic = 'force-dynamic';
+
+export default function EmployeesPage() {
   return (
     <div className="container">
       <section className="section">
