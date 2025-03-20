@@ -1,6 +1,7 @@
 'use client';
 
 import { Asset, Category } from '@prisma/client';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 interface AssetTableProps {
@@ -20,7 +21,7 @@ export default function AssetTable({ categoryId }: AssetTableProps) {
 
   // Add a timestamp to refresh assets when needed
   const [refreshTimestamp, setRefreshTimestamp] = useState(Date.now());
-  
+
   useEffect(() => {
     fetch('/api/assets')
       .then(res => res.json())
@@ -64,7 +65,7 @@ export default function AssetTable({ categoryId }: AssetTableProps) {
   const getCategoryName = (categoryId: string) => {
     return categories.find(c => c.id === categoryId)?.name || 'Category';
   };
-  
+
   // Function to force refresh asset data
   const refreshAssets = () => {
     setRefreshTimestamp(Date.now());
@@ -107,8 +108,12 @@ export default function AssetTable({ categoryId }: AssetTableProps) {
                 </td>
                 <td>
                   <div className="buttons are-small">
-                    <button className="button is-info">View</button>
-                    <button className="button is-warning">Edit</button>
+                    <Link href={`/assets/${asset.id}`} className="button is-info">
+                      View
+                    </Link>
+                    <Link href={`/assets/${asset.id}/edit`} className="button is-warning">
+                      Edit
+                    </Link>
                   </div>
                 </td>
               </tr>
