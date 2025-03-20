@@ -1,6 +1,9 @@
 import { prisma } from '@/lib/prisma';
+import { unstable_noStore as noStore } from 'next/cache';
 
 export default async function LocationsPage() {
+  // Disable caching for this page to show latest data
+  noStore();
   const locations = await prisma.location.findMany({
     include: {
       assets: {
@@ -20,11 +23,35 @@ export default async function LocationsPage() {
             <h2 className="subtitle">Manage asset locations</h2>
           </div>
           <div className="column is-narrow">
-            <button className="button is-primary">Add New Location</button>
+            <a href="/locations/new" className="button is-primary">
+              <span className="icon">
+                <i className="fas fa-plus"></i>
+              </span>
+              <span>Add New Location</span>
+            </a>
           </div>
         </div>
 
-        {locations.map((location) => (
+        {locations.length === 0 ? (
+          <div className="box has-text-centered p-6">
+            <p className="mb-4">
+              <span className="icon is-large has-text-grey-light">
+                <i className="fas fa-map-marker-alt fa-3x"></i>
+              </span>
+            </p>
+            <p className="title is-5 has-text-grey">No locations found</p>
+            <p className="subtitle is-6 has-text-grey-light mb-5">
+              You haven't added any locations yet. Add your first location to start tracking assets.
+            </p>
+            <a href="/locations/new" className="button is-primary">
+              <span className="icon">
+                <i className="fas fa-plus"></i>
+              </span>
+              <span>Add New Location</span>
+            </a>
+          </div>
+        ) : (
+          locations.map((location) => (
           <div key={location.id} className="box mb-5">
             <div className="columns">
               <div className="column is-one-third">
@@ -93,7 +120,7 @@ export default async function LocationsPage() {
               </div>
             </div>
           </div>
-        ))}
+        )))}
       </section>
     </div>
   );
