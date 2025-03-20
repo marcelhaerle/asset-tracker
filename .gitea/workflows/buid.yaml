@@ -1,4 +1,4 @@
-name: Asset Manager Build
+name: Asset Tracker Build
 on: [push]
 
 jobs:
@@ -23,5 +23,5 @@ jobs:
         with:
           context: .
           push: true
-          tags: registry.sonnvest.de/sonnvest/asset-manager:latest
+          tags: registry.sonnvest.de/sonnvest/asset-tracker:latest
           platforms: linux/amd64
