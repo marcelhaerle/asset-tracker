@@ -20,7 +20,12 @@ export default function AssetsPage() {
             <h2 className="subtitle">View and manage company assets</h2>
           </div>
           <div className="column is-narrow">
-            <button className="button is-primary">Add New Asset</button>
+            <a href="/assets/new" className="button is-primary">
+              <span className="icon">
+                <i className="fas fa-plus"></i>
+              </span>
+              <span>Add New Asset</span>
+            </a>
           </div>
         </div>
 

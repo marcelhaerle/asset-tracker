@@ -18,18 +18,23 @@ export default function AssetTable({ categoryId }: AssetTableProps) {
   const [filteredAssets, setFilteredAssets] = useState<AssetIncluded[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
 
+  // Add a timestamp to refresh assets when needed
+  const [refreshTimestamp, setRefreshTimestamp] = useState(Date.now());
+  
   useEffect(() => {
     fetch('/api/assets')
       .then(res => res.json())
       .then(data => {
         setAssets(data.assets);
         setFilteredAssets(data.assets);
-      });
+      })
+      .catch(err => console.error('Error fetching assets:', err));
 
     fetch('/api/categories')
       .then(res => res.json())
-      .then(data => setCategories(data.categories));
-  }, []);
+      .then(data => setCategories(data.categories))
+      .catch(err => console.error('Error fetching categories:', err));
+  }, [refreshTimestamp]);
 
   useEffect(() => {
     if (categoryId) {
@@ -58,6 +63,11 @@ export default function AssetTable({ categoryId }: AssetTableProps) {
 
   const getCategoryName = (categoryId: string) => {
     return categories.find(c => c.id === categoryId)?.name || 'Category';
+  };
+  
+  // Function to force refresh asset data
+  const refreshAssets = () => {
+    setRefreshTimestamp(Date.now());
   };
 
   return (
