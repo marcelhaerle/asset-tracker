@@ -78,8 +78,18 @@ export default async function LocationsPage() {
                   </div>
                 </div>
                 <div className="buttons">
-                  <button className="button is-info is-small">Edit</button>
-                  <button className="button is-danger is-small">Delete</button>
+                  <a href={`/locations/edit/${location.id}`} className="button is-info is-small">
+                    <span className="icon is-small">
+                      <i className="fas fa-edit"></i>
+                    </span>
+                    <span>Edit</span>
+                  </a>
+                  <button className="button is-danger is-small">
+                    <span className="icon is-small">
+                      <i className="fas fa-trash"></i>
+                    </span>
+                    <span>Delete</span>
+                  </button>
                 </div>
               </div>
 
