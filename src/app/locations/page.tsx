@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { unstable_noStore as noStore } from 'next/cache';
+import DeleteLocationButton from '../components/DeleteLocationButton';
 
 export default async function LocationsPage() {
   // Disable caching for this page to show latest data
@@ -84,12 +85,7 @@ export default async function LocationsPage() {
                     </span>
                     <span>Edit</span>
                   </a>
-                  <button className="button is-danger is-small">
-                    <span className="icon is-small">
-                      <i className="fas fa-trash"></i>
-                    </span>
-                    <span>Delete</span>
-                  </button>
+                  <DeleteLocationButton location={location} />
                 </div>
               </div>
 
