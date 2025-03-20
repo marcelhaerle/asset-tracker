@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Toast from '@/app/components/Toast';
+import Toast from '@/components/Toast';
 
 type LocationWithAssets = {
   id: string;

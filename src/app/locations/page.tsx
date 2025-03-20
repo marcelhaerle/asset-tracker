@@ -1,7 +1,7 @@
 import { unstable_noStore as noStore } from 'next/cache';
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { LocationList, LocationListFallback } from '../components/location/LocationList';
+import { LocationList, LocationListFallback } from '../../components/location/LocationList';
 
 export default async function LocationsPage() {
   // Disable caching for this page to show latest data

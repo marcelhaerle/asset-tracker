@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 
 import './globals.css';
 
-import Nav from './components/layout/Nav';
-import Footer from './components/layout/Footer';
+import Nav from '../components/layout/Nav';
+import Footer from '../components/layout/Footer';
 
 export const metadata: Metadata = {
   title: 'Company Asset Tracker',

@@ -1,7 +1,7 @@
 'use client';
 
-import AssetTable from '../components/assets/AssetTable';
-import AssetCategoryFilter from '../components/assets/AssetCategoryFilter';
+import AssetTable from '../../components/assets/AssetTable';
+import AssetCategoryFilter from '../../components/assets/AssetCategoryFilter';
 import { useState } from 'react';
 
 export default function AssetsPage() {
