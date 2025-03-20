@@ -10,6 +10,30 @@ export default async function Home() {
   });
 
   const categories = await prisma.category.findMany();
+  
+  // Get service schedules that are due in the current month
+  const today = new Date();
+  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  
+  const dueServiceSchedules = await prisma.serviceSchedule.findMany({
+    where: {
+      nextServiceDate: {
+        lte: endOfMonth
+      },
+      enabled: true
+    },
+    include: {
+      asset: {
+        include: {
+          category: true,
+          location: true,
+        }
+      }
+    },
+    orderBy: {
+      nextServiceDate: 'asc'
+    }
+  });
 
   const getStatusClassName = (status: string) => {
     switch (status) {
@@ -31,6 +55,51 @@ export default async function Home() {
             <h2 className="subtitle">Manage and track your company's physical assets</h2>
           </div>
         </div>
+        
+        {dueServiceSchedules.length > 0 && (
+          <div className="block">
+            <div className="notification is-warning">
+              <h3 className="title is-4">
+                <span className="icon mr-2">
+                  <i className="fas fa-exclamation-triangle"></i>
+                </span>
+                Upcoming Service Due
+              </h3>
+              <div className="table-container">
+                <table className="table is-fullwidth">
+                  <thead>
+                    <tr>
+                      <th>Asset</th>
+                      <th>Service Due</th>
+                      <th>Category</th>
+                      <th>Location</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dueServiceSchedules.map((schedule) => (
+                      <tr key={schedule.id}>
+                        <td>{schedule.asset.name} ({schedule.asset.assetTag})</td>
+                        <td>
+                          <strong className={new Date(schedule.nextServiceDate) < new Date() ? 'has-text-danger' : ''}>
+                            {new Date(schedule.nextServiceDate).toLocaleDateString()}
+                          </strong>
+                        </td>
+                        <td>{schedule.asset.category.name}</td>
+                        <td>{schedule.asset.location?.name || '-'}</td>
+                        <td>
+                          <a href={`/assets/${schedule.asset.id}`} className="button is-small is-info">
+                            View Asset
+                          </a>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
         
         <div className="block mt-6">
           <div className="box">

@@ -37,6 +37,7 @@ model Asset {
   assignedTo        Employee?   @relation(fields: [assignedToId], references: [id])
   maintenanceRecords MaintenanceRecord[]
   checkoutHistory   CheckoutRecord[]
+  serviceSchedule   ServiceSchedule?
 }
 
 model Category {
@@ -102,4 +103,35 @@ enum AssetStatus {
   IN_REPAIR
   RETIRED
   LOST
+}
+
+model ServiceSchedule {
+  id                  String           @id @default(uuid())
+  enabled             Boolean          @default(true)
+  intervalMonths      Int              // 3, 6, or 12 months
+  lastServiceDate     DateTime?        // Date of the last service
+  nextServiceDate     DateTime         // Date when the next service is due
+  notes               String?          // Any notes about the service schedule
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  
+  // Relations
+  assetId             String           @unique
+  asset               Asset            @relation(fields: [assetId], references: [id])
+  serviceRecords      ServiceRecord[]
+}
+
+model ServiceRecord {
+  id                String       @id @default(uuid())
+  serviceDate       DateTime     // When the service was performed
+  description       String       // Description of the service performed
+  cost              Float?       // Cost of the service
+  provider          String?      // Who performed the service
+  notes             String?      // Any additional notes
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  
+  // Relations
+  serviceScheduleId String
+  serviceSchedule   ServiceSchedule @relation(fields: [serviceScheduleId], references: [id])
 }

@@ -28,6 +28,15 @@ export async function GET(
           orderBy: {
             checkedOutAt: 'desc'
           }
+        },
+        serviceSchedule: {
+          include: {
+            serviceRecords: {
+              orderBy: {
+                serviceDate: 'desc'
+              }
+            }
+          }
         }
       }
     });
@@ -115,6 +124,7 @@ export async function PUT(
         category: true,
         location: true,
         assignedTo: true,
+        serviceSchedule: true,
       }
     });
     
@@ -147,7 +157,12 @@ export async function DELETE(
       where: { id: assetId },
       include: {
         maintenanceRecords: true,
-        checkoutHistory: true
+        checkoutHistory: true,
+        serviceSchedule: {
+          include: {
+            serviceRecords: true
+          }
+        }
       }
     });
     
@@ -159,15 +174,25 @@ export async function DELETE(
     }
     
     // Check if asset has associated records
-    if (assetExists.maintenanceRecords.length > 0 || assetExists.checkoutHistory.length > 0) {
+    if (assetExists.maintenanceRecords.length > 0 || 
+        assetExists.checkoutHistory.length > 0 || 
+        (assetExists.serviceSchedule?.serviceRecords.length ?? 0) > 0) {
       return NextResponse.json(
         { 
-          error: 'Cannot delete asset with associated maintenance or checkout records.', 
+          error: 'Cannot delete asset with associated maintenance, checkout, or service records.', 
           maintenanceCount: assetExists.maintenanceRecords.length,
-          checkoutCount: assetExists.checkoutHistory.length 
+          checkoutCount: assetExists.checkoutHistory.length,
+          serviceRecordCount: assetExists.serviceSchedule?.serviceRecords.length ?? 0
         },
         { status: 400 }
       );
+    }
+    
+    // Delete any service schedule without records
+    if (assetExists.serviceSchedule && assetExists.serviceSchedule.serviceRecords.length === 0) {
+      await prisma.serviceSchedule.delete({
+        where: { id: assetExists.serviceSchedule.id }
+      });
     }
     
     // Delete asset

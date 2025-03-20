@@ -10,7 +10,27 @@ import AssetMetadata from '@/components/assets/AssetMetadata';
 import AssetAssignment from '@/components/assets/AssetAssignment';
 import AssetLocation from '@/components/assets/AssetLocation';
 import AssetMaintenanceHistory from '@/components/assets/AssetMaintenanceHistory';
+import AssetServiceSchedule from '@/components/assets/AssetServiceSchedule';
 import AssetDetails from '@/components/assets/AssetDetails';
+
+type ServiceRecord = {
+  id: string;
+  serviceDate: string;
+  description: string;
+  cost: number | null;
+  provider: string | null;
+  notes: string | null;
+};
+
+type ServiceSchedule = {
+  id: string;
+  enabled: boolean;
+  intervalMonths: number;
+  lastServiceDate: string | null;
+  nextServiceDate: string;
+  notes: string | null;
+  serviceRecords: ServiceRecord[];
+};
 
 type AssetWithRelations = {
   id: string;
@@ -61,6 +81,7 @@ type AssetWithRelations = {
       employeeId: string;
     };
   }[];
+  serviceSchedule: ServiceSchedule | null;
 };
 
 export default function AssetDetailsPage() {
@@ -212,6 +233,10 @@ export default function AssetDetailsPage() {
           {/* Main asset details */}
           <div className="column is-two-thirds">
             <AssetDetails asset={asset} />
+            <AssetServiceSchedule 
+              asset={asset} 
+              onScheduleUpdated={() => setRefreshKey(prev => prev + 1)}
+            />
             <AssetMaintenanceHistory maintenanceRecords={asset.maintenanceRecords} />
             <AssetCheckoutHistory 
               asset={asset} 
