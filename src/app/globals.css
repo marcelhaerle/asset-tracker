@@ -12,6 +12,12 @@
   }
 }
 
+body {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
 /* Custom styles for asset status badges */
 .tag.is-available {
   background-color: #48c774;
