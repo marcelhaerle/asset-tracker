@@ -1,5 +1,5 @@
 import { Category } from '@prisma/client';
-import DeleteLocationButton from './DeleteLocationButton';
+import DeleteLocationButton from '@/components/location/DeleteLocationButton';
 import Link from 'next/link';
 
 type AssetwithCategory = {

@@ -2,7 +2,7 @@
 
 import { FormEvent, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Toast from '@/app/components/Toast';
+import Toast from '@/components/Toast';
 
 type Category = {
   id: string;
@@ -27,13 +27,13 @@ export default function NewAssetPage() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
-  
+
   // Data for select inputs
   const [categories, setCategories] = useState<Category[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   const [formData, setFormData] = useState({
     name: '',
     assetTag: '',
@@ -59,7 +59,7 @@ export default function NewAssetPage() {
         const [categoriesRes, locationsRes, employeesRes] = await Promise.all([
           fetch('/api/categories'),
           fetch('/api/locations'),
-          fetch('/api/employees')
+          fetch('/api/employees'),
         ]);
 
         if (!categoriesRes.ok || !locationsRes.ok) {
@@ -69,7 +69,7 @@ export default function NewAssetPage() {
         const categoriesData = await categoriesRes.json();
         const locationsData = await locationsRes.json();
         let employeesData = { employees: [] };
-        
+
         // If employees API exists and returns successfully
         if (employeesRes.ok) {
           employeesData = await employeesRes.json();
@@ -78,7 +78,6 @@ export default function NewAssetPage() {
         setCategories(categoriesData.categories || []);
         setLocations(locationsData.locations || []);
         setEmployees(employeesData.employees || []);
-        
       } catch (err) {
         console.error('Error fetching form data:', err);
         setError('Failed to load form data. Please try again.');
@@ -90,11 +89,13 @@ export default function NewAssetPage() {
     fetchData();
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -102,13 +103,13 @@ export default function NewAssetPage() {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
-    
+
     try {
       // Basic validation
       if (!formData.name.trim() || !formData.assetTag.trim() || !formData.categoryId) {
         throw new Error('Name, asset tag, and category are required');
       }
-      
+
       // Submit data to the API
       const response = await fetch('/api/assets', {
         method: 'POST',
@@ -117,17 +118,17 @@ export default function NewAssetPage() {
         },
         body: JSON.stringify(formData),
       });
-      
+
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.error || 'Failed to create asset');
       }
-      
+
       // Show success message and toast
       setSuccessMessage('Asset created successfully!');
       setShowSuccessToast(true);
-      
+
       // Reset form data
       setFormData({
         name: '',
@@ -145,13 +146,12 @@ export default function NewAssetPage() {
         locationId: '',
         assignedToId: '',
       });
-      
+
       // Redirect to assets page after a short delay
       setTimeout(() => {
         router.push('/assets');
         router.refresh(); // Refresh the page data
       }, 2000);
-      
     } catch (err: any) {
       setError(err.message || 'An error occurred while creating the asset');
     } finally {
@@ -186,32 +186,32 @@ export default function NewAssetPage() {
           <div className="column is-three-quarters">
             <h1 className="title is-2">Add New Asset</h1>
             <h2 className="subtitle">Create a new asset in the inventory</h2>
-            
+
             {error && (
               <div className="notification is-danger">
                 <button className="delete" onClick={() => setError(null)}></button>
                 {error}
               </div>
             )}
-            
+
             {successMessage && (
               <div className="notification is-success">
                 <button className="delete" onClick={() => setSuccessMessage(null)}></button>
                 {successMessage}
               </div>
             )}
-            
+
             <div className="box">
               <form onSubmit={handleSubmit}>
                 <div className="columns">
                   <div className="column">
                     {/* Basic Information */}
                     <h3 className="title is-4">Basic Information</h3>
-                    
+
                     <div className="field">
                       <label className="label">Asset Name *</label>
                       <div className="control">
-                        <input 
+                        <input
                           className="input"
                           type="text"
                           name="name"
@@ -222,11 +222,11 @@ export default function NewAssetPage() {
                         />
                       </div>
                     </div>
-                    
+
                     <div className="field">
                       <label className="label">Asset Tag / ID *</label>
                       <div className="control">
-                        <input 
+                        <input
                           className="input"
                           type="text"
                           name="assetTag"
@@ -238,11 +238,11 @@ export default function NewAssetPage() {
                       </div>
                       <p className="help">Unique identifier for this asset</p>
                     </div>
-                    
+
                     <div className="field">
                       <label className="label">Serial Number</label>
                       <div className="control">
-                        <input 
+                        <input
                           className="input"
                           type="text"
                           name="serialNumber"
@@ -253,11 +253,11 @@ export default function NewAssetPage() {
                       </div>
                       <p className="help">Manufacturer's serial number</p>
                     </div>
-                    
+
                     <div className="field">
                       <label className="label">Description</label>
                       <div className="control">
-                        <textarea 
+                        <textarea
                           className="textarea"
                           name="description"
                           value={formData.description}
@@ -266,13 +266,13 @@ export default function NewAssetPage() {
                         />
                       </div>
                     </div>
-                    
+
                     <div className="field">
                       <label className="label">Category *</label>
                       <div className="control">
                         <div className="select is-fullwidth">
-                          <select 
-                            name="categoryId" 
+                          <select
+                            name="categoryId"
                             value={formData.categoryId}
                             onChange={handleChange}
                             required
@@ -288,15 +288,15 @@ export default function NewAssetPage() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="column">
                     {/* Asset Details */}
                     <h3 className="title is-4">Asset Details</h3>
-                    
+
                     <div className="field">
                       <label className="label">Manufacturer</label>
                       <div className="control">
-                        <input 
+                        <input
                           className="input"
                           type="text"
                           name="manufacturer"
@@ -306,11 +306,11 @@ export default function NewAssetPage() {
                         />
                       </div>
                     </div>
-                    
+
                     <div className="field">
                       <label className="label">Model</label>
                       <div className="control">
-                        <input 
+                        <input
                           className="input"
                           type="text"
                           name="model"
@@ -320,11 +320,11 @@ export default function NewAssetPage() {
                         />
                       </div>
                     </div>
-                    
+
                     <div className="field">
                       <label className="label">Purchase Date</label>
                       <div className="control">
-                        <input 
+                        <input
                           className="input"
                           type="date"
                           name="purchaseDate"
@@ -333,13 +333,13 @@ export default function NewAssetPage() {
                         />
                       </div>
                     </div>
-                    
+
                     <div className="columns">
                       <div className="column">
                         <div className="field">
                           <label className="label">Purchase Price</label>
                           <div className="control has-icons-left">
-                            <input 
+                            <input
                               className="input"
                               type="number"
                               step="0.01"
@@ -355,12 +355,12 @@ export default function NewAssetPage() {
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="column">
                         <div className="field">
                           <label className="label">Expected Lifespan (months)</label>
                           <div className="control">
-                            <input 
+                            <input
                               className="input"
                               type="number"
                               min="0"
@@ -373,16 +373,12 @@ export default function NewAssetPage() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="field">
                       <label className="label">Status</label>
                       <div className="control">
                         <div className="select is-fullwidth">
-                          <select 
-                            name="status" 
-                            value={formData.status}
-                            onChange={handleChange}
-                          >
+                          <select name="status" value={formData.status} onChange={handleChange}>
                             <option value="AVAILABLE">Available</option>
                             <option value="IN_USE">In Use</option>
                             <option value="IN_REPAIR">In Repair</option>
@@ -394,18 +390,18 @@ export default function NewAssetPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="columns">
                   <div className="column">
                     {/* Location and Assignment */}
                     <h3 className="title is-4">Location & Assignment</h3>
-                    
+
                     <div className="field">
                       <label className="label">Location</label>
                       <div className="control">
                         <div className="select is-fullwidth">
-                          <select 
-                            name="locationId" 
+                          <select
+                            name="locationId"
                             value={formData.locationId}
                             onChange={handleChange}
                           >
@@ -419,13 +415,13 @@ export default function NewAssetPage() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="field">
                       <label className="label">Assigned To</label>
                       <div className="control">
                         <div className="select is-fullwidth">
-                          <select 
-                            name="assignedToId" 
+                          <select
+                            name="assignedToId"
                             value={formData.assignedToId}
                             onChange={handleChange}
                           >
@@ -439,11 +435,11 @@ export default function NewAssetPage() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="field">
                       <label className="label">Notes</label>
                       <div className="control">
-                        <textarea 
+                        <textarea
                           className="textarea"
                           name="notes"
                           value={formData.notes}
@@ -454,11 +450,11 @@ export default function NewAssetPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="field is-grouped mt-5">
                   <div className="control">
-                    <button 
-                      type="submit" 
+                    <button
+                      type="submit"
                       className={`button is-primary ${isSubmitting ? 'is-loading' : ''}`}
                       disabled={isSubmitting}
                     >
@@ -469,11 +465,7 @@ export default function NewAssetPage() {
                     </button>
                   </div>
                   <div className="control">
-                    <button 
-                      type="button" 
-                      className="button is-light"
-                      onClick={handleCancel}
-                    >
+                    <button type="button" className="button is-light" onClick={handleCancel}>
                       Cancel
                     </button>
                   </div>
@@ -483,10 +475,10 @@ export default function NewAssetPage() {
           </div>
         </div>
       </section>
-      
+
       {/* Success Toast */}
       {showSuccessToast && (
-        <Toast 
+        <Toast
           message="Asset created successfully! Redirecting to assets page..."
           type="success"
           onClose={() => setShowSuccessToast(false)}
