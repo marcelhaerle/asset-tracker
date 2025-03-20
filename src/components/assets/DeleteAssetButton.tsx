@@ -14,7 +14,7 @@ export default function DeleteAssetButton({
   assetId,
   assetName,
   assetTag,
-  onDeleteSuccess
+  onDeleteSuccess,
 }: DeleteAssetButtonProps) {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -59,7 +59,7 @@ export default function DeleteAssetButton({
 
       // Close modal
       setIsModalOpen(false);
-      
+
       // Call success callback if provided
       if (onDeleteSuccess) {
         onDeleteSuccess();
@@ -77,7 +77,7 @@ export default function DeleteAssetButton({
 
   return (
     <>
-      <button 
+      <button
         onClick={openModal}
         className="button is-danger"
         aria-label={`Delete asset ${assetName}`}
@@ -93,27 +93,23 @@ export default function DeleteAssetButton({
         <div className="modal-card">
           <header className="modal-card-head">
             <p className="modal-card-title">Confirm Deletion</p>
-            <button 
-              className="delete" 
-              aria-label="close" 
-              onClick={closeModal}
-            ></button>
+            <button className="delete" aria-label="close" onClick={closeModal}></button>
           </header>
           <section className="modal-card-body">
             {!hasAssociatedRecords ? (
               <div>
                 <p>Are you sure you want to delete the following asset?</p>
                 <div className="box mt-3">
-                  <p><strong>Name:</strong> {assetName}</p>
-                  <p><strong>Asset Tag:</strong> {assetTag}</p>
+                  <p>
+                    <strong>Name:</strong> {assetName}
+                  </p>
+                  <p>
+                    <strong>Asset Tag:</strong> {assetTag}
+                  </p>
                 </div>
                 <p className="has-text-danger mt-3">This action cannot be undone.</p>
-                
-                {error && (
-                  <div className="notification is-danger mt-4">
-                    {error}
-                  </div>
-                )}
+
+                {error && <div className="notification is-danger mt-4">{error}</div>}
               </div>
             ) : (
               <div>
@@ -121,12 +117,8 @@ export default function DeleteAssetButton({
                   <p className="has-text-weight-bold">Cannot Delete Asset</p>
                   <p>This asset has associated records that must be removed first:</p>
                   <ul className="mt-2">
-                    {maintenanceCount > 0 && (
-                      <li>• {maintenanceCount} maintenance record(s)</li>
-                    )}
-                    {checkoutCount > 0 && (
-                      <li>• {checkoutCount} checkout record(s)</li>
-                    )}
+                    {maintenanceCount > 0 && <li>• {maintenanceCount} maintenance record(s)</li>}
+                    {checkoutCount > 0 && <li>• {checkoutCount} checkout record(s)</li>}
                   </ul>
                 </div>
                 <p>Please remove these associated records before deleting this asset.</p>
@@ -135,18 +127,22 @@ export default function DeleteAssetButton({
           </section>
           <footer className="modal-card-foot">
             {!hasAssociatedRecords ? (
-              <>
-                <button 
+              <div className="buttons">
+                <button
                   className={`button is-danger ${isDeleting ? 'is-loading' : ''}`}
                   onClick={handleDelete}
                   disabled={isDeleting}
                 >
                   Delete Asset
                 </button>
-                <button className="button" onClick={closeModal}>Cancel</button>
-              </>
+                <button className="button" onClick={closeModal}>
+                  Cancel
+                </button>
+              </div>
             ) : (
-              <button className="button" onClick={closeModal}>Close</button>
+              <button className="button" onClick={closeModal}>
+                Close
+              </button>
             )}
           </footer>
         </div>

@@ -119,16 +119,18 @@ export default function DeleteLocationButton({ location }: { location: LocationW
             )}
           </section>
           <footer className="modal-card-foot">
-            <button
-              className={`button is-danger ${isDeleting ? 'is-loading' : ''}`}
-              onClick={handleDelete}
-              disabled={isDeleting || assetCount > 0}
-            >
-              Delete Location
-            </button>
-            <button className="button" onClick={closeModal}>
-              Cancel
-            </button>
+            <div className="buttons">
+              <button
+                className={`button is-danger ${isDeleting ? 'is-loading' : ''}`}
+                onClick={handleDelete}
+                disabled={isDeleting || assetCount > 0}
+              >
+                Delete Location
+              </button>
+              <button className="button" onClick={closeModal}>
+                Cancel
+              </button>
+            </div>
           </footer>
         </div>
       </div>
