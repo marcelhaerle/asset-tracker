@@ -1,0 +1,105 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Models for asset tracking
+
+model Asset {
+  id                String      @id @default(uuid())
+  assetTag          String      @unique // Company's asset identifier
+  serialNumber      String?     // Manufacturer's serial number
+  name              String      // Descriptive name of the asset
+  description       String?     // Additional details
+  model             String?     // Model information
+  manufacturer      String?     // Manufacturer name
+  purchaseDate      DateTime?   // When the asset was purchased
+  purchasePrice     Float?      // How much the asset cost
+  expectedLifespan  Int?        // Expected lifespan in months
+  status            AssetStatus @default(AVAILABLE)
+  notes             String?     // Any additional notes
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  
+  // Relations
+  categoryId        String
+  category          Category    @relation(fields: [categoryId], references: [id])
+  locationId        String?
+  location          Location?   @relation(fields: [locationId], references: [id])
+  assignedToId      String?
+  assignedTo        Employee?   @relation(fields: [assignedToId], references: [id])
+  maintenanceRecords MaintenanceRecord[]
+  checkoutHistory   CheckoutRecord[]
+}
+
+model Category {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
+  assets      Asset[]
+}
+
+model Location {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  address     String?
+  building    String?
+  floor       String?
+  room        String?
+  assets      Asset[]
+}
+
+model Employee {
+  id               String           @id @default(uuid())
+  employeeId       String           @unique // Company's employee identifier
+  firstName        String
+  lastName         String
+  email            String           @unique
+  department       String?
+  position         String?
+  phone            String?
+  isActive         Boolean          @default(true)
+  assignedAssets   Asset[]
+  checkoutHistory  CheckoutRecord[]
+}
+
+model MaintenanceRecord {
+  id          String    @id @default(uuid())
+  date        DateTime
+  description String
+  cost        Float?
+  provider    String?
+  assetId     String
+  asset       Asset     @relation(fields: [assetId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model CheckoutRecord {
+  id          String    @id @default(uuid())
+  checkedOutAt DateTime
+  returnedAt   DateTime?
+  notes        String?
+  assetId      String
+  asset        Asset     @relation(fields: [assetId], references: [id])
+  employeeId   String
+  employee     Employee  @relation(fields: [employeeId], references: [id])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+enum AssetStatus {
+  AVAILABLE
+  IN_USE
+  IN_REPAIR
+  RETIRED
+  LOST
+}
