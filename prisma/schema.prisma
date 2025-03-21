@@ -10,7 +10,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Models for asset tracking
+// Models for asset tracking and authentication
 
 model Asset {
   id                String      @id @default(uuid())
@@ -27,7 +27,7 @@ model Asset {
   notes             String?     // Any additional notes
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
-  
+
   // Relations
   categoryId        String
   category          Category    @relation(fields: [categoryId], references: [id])
@@ -114,7 +114,7 @@ model ServiceSchedule {
   notes               String?          // Any notes about the service schedule
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
-  
+
   // Relations
   assetId             String           @unique
   asset               Asset            @relation(fields: [assetId], references: [id])
@@ -130,8 +130,32 @@ model ServiceRecord {
   notes             String?      // Any additional notes
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
-  
+
   // Relations
   serviceScheduleId String
   serviceSchedule   ServiceSchedule @relation(fields: [serviceScheduleId], references: [id])
+}
+
+model User {
+  id                Int          @id @default(autoincrement())
+  username          String       @unique
+  password          String       // Hashed password
+  name              String?
+  email             String       @unique
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  // Authentication data
+  sessions          Session[]
+}
+
+model Session {
+  id                String       @id @default(uuid())
+  token             String       @unique
+  expiresAt         DateTime
+  createdAt         DateTime     @default(now())
+
+  // Relations
+  userId            Int
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

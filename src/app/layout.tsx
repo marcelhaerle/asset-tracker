@@ -4,6 +4,7 @@ import './globals.css';
 
 import Nav from '../components/layout/Nav';
 import Footer from '../components/layout/Footer';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 export const metadata: Metadata = {
   title: 'Company Asset Tracker',
@@ -30,9 +31,11 @@ export default function RootLayout({
         <link {...fontAwesomeLink} />
       </head>
       <body>
-        <Nav />
-        <main>{children}</main>
-        <Footer />
+        <AuthProvider>
+          <Nav />
+          <main>{children}</main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );

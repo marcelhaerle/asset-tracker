@@ -17,6 +17,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
+RUN npm run build:scripts
 
 # Production image, copy all the files and run the application
 FROM node:22-alpine AS runner
@@ -37,6 +38,9 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nextjs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nextjs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nextjs /app/prisma ./prisma
+COPY --from=builder --chown=nextjs:nextjs /app/scripts ./scripts
+COPY --from=builder --chown=nextjs:nextjs /app/dist ./dist
+COPY --from=builder --chown=nextjs:nextjs /app/package.json ./
 
 # Expose the port the app runs on
 EXPOSE 3000
