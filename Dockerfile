@@ -42,6 +42,7 @@ COPY --from=builder --chown=nextjs:nextjs /app/scripts ./scripts
 COPY --from=builder --chown=nextjs:nextjs /app/dist ./dist
 COPY --from=builder --chown=nextjs:nextjs /app/package.json ./
 COPY --from=builder --chown=nextjs:nextjs /app/package-lock.json ./
+COPY --from=builder --chown=nextjs:nextjs /app/node_modules ./node_modules
 
 # Expose the port the app runs on
 EXPOSE 3000
