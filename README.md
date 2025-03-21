@@ -10,6 +10,7 @@ A Next.js application for tracking company assets like computers, network equipm
 - Assign assets to employees
 - Record maintenance history
 - Keep checkout records of equipment
+- Secure user authentication
 
 ## Database Schema
 
@@ -21,6 +22,8 @@ The application uses Prisma with SQLite to store the following entities:
 - **Employees**: Staff members who can be assigned assets
 - **Maintenance Records**: History of repairs and maintenance
 - **Checkout Records**: History of asset assignments
+- **Users**: Authentication records for system users
+- **Sessions**: Encrypted session data for authenticated users
 
 ## Getting Started
 
@@ -44,7 +47,18 @@ cd asset-tracker
 npm install
 ```
 
-3. Set up the database:
+3. Set up environment variables:
+
+```bash
+# Create a .env file with the required variables
+cp .env.example .env
+
+# Edit the .env file and set a strong SESSION_SECRET
+# You can generate one using:
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+4. Set up the database:
 
 ```bash
 # Create the database and run migrations
@@ -54,13 +68,13 @@ npx prisma migrate dev
 npm run db:seed
 ```
 
-4. Start the development server:
+5. Start the development server:
 
 ```bash
 npm run dev
 ```
 
-5. Open [http://localhost:3000](http://localhost:3000) to view the application
+6. Open [http://localhost:3000](http://localhost:3000) to view the application
 
 ## API Endpoints
 
