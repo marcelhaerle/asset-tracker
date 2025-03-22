@@ -34,6 +34,7 @@ export default function AssetServiceSchedule({
   onScheduleUpdated: () => void;
 }) {
   const [isCreating, setIsCreating] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [isAddingRecord, setIsAddingRecord] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
@@ -192,6 +193,53 @@ export default function AssetServiceSchedule({
     }
   };
   
+  const initEditForm = () => {
+    if (!asset.serviceSchedule) return;
+    
+    setScheduleForm({
+      intervalMonths: asset.serviceSchedule.intervalMonths,
+      nextServiceDate: asset.serviceSchedule.nextServiceDate.split('T')[0],
+      notes: asset.serviceSchedule.notes || ''
+    });
+    
+    setIsEditing(true);
+  };
+  
+  const handleUpdateSchedule = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!asset.serviceSchedule) return;
+    
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch(`/api/service-schedules/${asset.serviceSchedule.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          intervalMonths: parseInt(scheduleForm.intervalMonths.toString()),
+          nextServiceDate: scheduleForm.nextServiceDate,
+          notes: scheduleForm.notes || null
+        }),
+      });
+      
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to update service schedule');
+      }
+      
+      // Update the UI
+      setIsEditing(false);
+      onScheduleUpdated();
+    } catch (error) {
+      console.error('Error updating service schedule:', error);
+      alert('Failed to update service schedule');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   // No service schedule exists
   if (!asset.serviceSchedule && !isCreating) {
     return (
@@ -302,130 +350,57 @@ export default function AssetServiceSchedule({
         </div>
         <div className="level-right">
           <div className="level-item">
-            <button 
-              className={`button is-small ${asset.serviceSchedule?.enabled ? 'is-danger' : 'is-success'}`}
-              onClick={handleToggleSchedule}
-              disabled={isLoading}
-            >
-              {asset.serviceSchedule?.enabled ? 'Disable' : 'Enable'}
-            </button>
+            <div className="buttons">
+              <button 
+                className="button is-small is-info"
+                onClick={initEditForm}
+                disabled={isLoading || isEditing}
+              >
+                Edit
+              </button>
+              <button 
+                className={`button is-small ${asset.serviceSchedule?.enabled ? 'is-danger' : 'is-success'}`}
+                onClick={handleToggleSchedule}
+                disabled={isLoading || isEditing}
+              >
+                {asset.serviceSchedule?.enabled ? 'Disable' : 'Enable'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
       
-      <div className="columns">
-        <div className="column">
-          <div className="field">
-            <label className="label">Service Interval</label>
-            <p>{intervalLabel(asset.serviceSchedule?.intervalMonths || 0)}</p>
-          </div>
-        </div>
-        <div className="column">
-          <div className="field">
-            <label className="label">Last Service</label>
-            <p>{asset.serviceSchedule?.lastServiceDate ? formatDate(asset.serviceSchedule.lastServiceDate) : 'Never'}</p>
-          </div>
-        </div>
-        <div className="column">
-          <div className="field">
-            <label className="label">Next Service Due</label>
-            <p>
-              <strong className={new Date(asset.serviceSchedule?.nextServiceDate || '') < new Date() ? 'has-text-danger' : ''}>
-                {formatDate(asset.serviceSchedule?.nextServiceDate || '')}
-              </strong>
-            </p>
-          </div>
-        </div>
-      </div>
-      
-      {asset.serviceSchedule?.notes && (
-        <div className="notification is-light mt-3">
-          <p><strong>Notes:</strong> {asset.serviceSchedule.notes}</p>
-        </div>
-      )}
-      
-      <hr />
-      
-      <div className="level">
-        <div className="level-left">
-          <div className="level-item">
-            <h4 className="title is-5">Service History</h4>
-          </div>
-        </div>
-        <div className="level-right">
-          <div className="level-item">
-            <button 
-              className="button is-primary is-small"
-              onClick={() => setIsAddingRecord(true)}
-              disabled={isAddingRecord || !asset.serviceSchedule?.enabled}
-            >
-              Add Service Record
-            </button>
-          </div>
-        </div>
-      </div>
-      
-      {isAddingRecord && (
-        <div className="box mb-5">
-          <h5 className="title is-6">Add Service Record</h5>
-          <form onSubmit={handleAddRecord}>
+      {isEditing ? (
+        <div className="box mt-4 mb-5">
+          <h4 className="title is-5">Edit Service Schedule</h4>
+          <form onSubmit={handleUpdateSchedule}>
             <div className="field">
-              <label className="label">Service Date</label>
+              <label className="label">Service Interval</label>
+              <div className="control">
+                <div className="select is-fullwidth">
+                  <select 
+                    value={scheduleForm.intervalMonths} 
+                    onChange={(e) => setScheduleForm({...scheduleForm, intervalMonths: parseInt(e.target.value)})}
+                    required
+                  >
+                    <option value={3}>Quarterly (Every 3 months)</option>
+                    <option value={6}>Bi-annually (Every 6 months)</option>
+                    <option value={12}>Annually (Every 12 months)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            <div className="field">
+              <label className="label">Next Service Date</label>
               <div className="control">
                 <input 
                   className="input" 
                   type="date" 
-                  value={recordForm.serviceDate}
-                  onChange={(e) => setRecordForm({...recordForm, serviceDate: e.target.value})}
+                  value={scheduleForm.nextServiceDate}
+                  onChange={(e) => setScheduleForm({...scheduleForm, nextServiceDate: e.target.value})}
                   required
                 />
-              </div>
-            </div>
-            
-            <div className="field">
-              <label className="label">Description</label>
-              <div className="control">
-                <input 
-                  className="input" 
-                  type="text" 
-                  value={recordForm.description}
-                  onChange={(e) => setRecordForm({...recordForm, description: e.target.value})}
-                  placeholder="Brief description of the service performed"
-                  required
-                />
-              </div>
-            </div>
-            
-            <div className="columns">
-              <div className="column">
-                <div className="field">
-                  <label className="label">Cost</label>
-                  <div className="control">
-                    <input 
-                      className="input" 
-                      type="number" 
-                      value={recordForm.cost}
-                      onChange={(e) => setRecordForm({...recordForm, cost: e.target.value})}
-                      placeholder="0.00"
-                      step="0.01"
-                      min="0"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="column">
-                <div className="field">
-                  <label className="label">Provider</label>
-                  <div className="control">
-                    <input 
-                      className="input" 
-                      type="text" 
-                      value={recordForm.provider}
-                      onChange={(e) => setRecordForm({...recordForm, provider: e.target.value})}
-                      placeholder="Who performed the service"
-                    />
-                  </div>
-                </div>
               </div>
             </div>
             
@@ -434,9 +409,9 @@ export default function AssetServiceSchedule({
               <div className="control">
                 <textarea 
                   className="textarea" 
-                  value={recordForm.notes}
-                  onChange={(e) => setRecordForm({...recordForm, notes: e.target.value})}
-                  placeholder="Any additional notes about this service"
+                  value={scheduleForm.notes}
+                  onChange={(e) => setScheduleForm({...scheduleForm, notes: e.target.value})}
+                  placeholder="Any notes about this service schedule"
                 />
               </div>
             </div>
@@ -448,14 +423,14 @@ export default function AssetServiceSchedule({
                   className={`button is-primary ${isLoading ? 'is-loading' : ''}`}
                   disabled={isLoading}
                 >
-                  Save Record
+                  Update Schedule
                 </button>
               </div>
               <div className="control">
                 <button 
                   type="button" 
                   className="button is-light" 
-                  onClick={() => setIsAddingRecord(false)}
+                  onClick={() => setIsEditing(false)}
                   disabled={isLoading}
                 >
                   Cancel
@@ -464,35 +439,198 @@ export default function AssetServiceSchedule({
             </div>
           </form>
         </div>
+      ) : (
+        <>
+          <div className="columns">
+            <div className="column">
+              <div className="field">
+                <label className="label">Service Interval</label>
+                <p>{intervalLabel(asset.serviceSchedule?.intervalMonths || 0)}</p>
+              </div>
+            </div>
+            <div className="column">
+              <div className="field">
+                <label className="label">Last Service</label>
+                <p>{asset.serviceSchedule?.lastServiceDate ? formatDate(asset.serviceSchedule.lastServiceDate) : 'Never'}</p>
+              </div>
+            </div>
+            <div className="column">
+              <div className="field">
+                <label className="label">Next Service Due</label>
+                <p>
+                  <strong className={new Date(asset.serviceSchedule?.nextServiceDate || '') < new Date() ? 'has-text-danger' : ''}>
+                    {formatDate(asset.serviceSchedule?.nextServiceDate || '')}
+                  </strong>
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          {asset.serviceSchedule?.notes && (
+            <div className="notification is-light mt-3">
+              <p><strong>Notes:</strong> {asset.serviceSchedule.notes}</p>
+            </div>
+          )}
+        </>
       )}
       
-      {asset.serviceSchedule?.serviceRecords && asset.serviceSchedule.serviceRecords.length === 0 ? (
-        <div className="notification is-info is-light">
-          No service records found for this asset.
-        </div>
-      ) : (
-        <div className="table-container">
-          <table className="table is-fullwidth is-striped is-hoverable">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Description</th>
-                <th>Provider</th>
-                <th>Cost</th>
-              </tr>
-            </thead>
-            <tbody>
-              {asset.serviceSchedule?.serviceRecords.map(record => (
-                <tr key={record.id}>
-                  <td>{formatDate(record.serviceDate)}</td>
-                  <td>{record.description}</td>
-                  <td>{record.provider || '-'}</td>
-                  <td>{formatCurrency(record.cost)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {!isEditing && (
+        <>
+          <hr />
+          
+          <div className="level">
+            <div className="level-left">
+              <div className="level-item">
+                <h4 className="title is-5">Service History</h4>
+              </div>
+            </div>
+            <div className="level-right">
+              <div className="level-item">
+                <button 
+                  className="button is-primary is-small"
+                  onClick={() => setIsAddingRecord(true)}
+                  disabled={isAddingRecord || !asset.serviceSchedule?.enabled}
+                >
+                  Add Service Record
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+      
+      {!isEditing && (
+        <>
+          {isAddingRecord && (
+            <div className="box mb-5">
+              <h5 className="title is-6">Add Service Record</h5>
+              <form onSubmit={handleAddRecord}>
+                <div className="field">
+                  <label className="label">Service Date</label>
+                  <div className="control">
+                    <input 
+                      className="input" 
+                      type="date" 
+                      value={recordForm.serviceDate}
+                      onChange={(e) => setRecordForm({...recordForm, serviceDate: e.target.value})}
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div className="field">
+                  <label className="label">Description</label>
+                  <div className="control">
+                    <input 
+                      className="input" 
+                      type="text" 
+                      value={recordForm.description}
+                      onChange={(e) => setRecordForm({...recordForm, description: e.target.value})}
+                      placeholder="Brief description of the service performed"
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div className="columns">
+                  <div className="column">
+                    <div className="field">
+                      <label className="label">Cost</label>
+                      <div className="control">
+                        <input 
+                          className="input" 
+                          type="number" 
+                          value={recordForm.cost}
+                          onChange={(e) => setRecordForm({...recordForm, cost: e.target.value})}
+                          placeholder="0.00"
+                          step="0.01"
+                          min="0"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="column">
+                    <div className="field">
+                      <label className="label">Provider</label>
+                      <div className="control">
+                        <input 
+                          className="input" 
+                          type="text" 
+                          value={recordForm.provider}
+                          onChange={(e) => setRecordForm({...recordForm, provider: e.target.value})}
+                          placeholder="Who performed the service"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="field">
+                  <label className="label">Notes</label>
+                  <div className="control">
+                    <textarea 
+                      className="textarea" 
+                      value={recordForm.notes}
+                      onChange={(e) => setRecordForm({...recordForm, notes: e.target.value})}
+                      placeholder="Any additional notes about this service"
+                    />
+                  </div>
+                </div>
+                
+                <div className="field is-grouped">
+                  <div className="control">
+                    <button 
+                      type="submit" 
+                      className={`button is-primary ${isLoading ? 'is-loading' : ''}`}
+                      disabled={isLoading}
+                    >
+                      Save Record
+                    </button>
+                  </div>
+                  <div className="control">
+                    <button 
+                      type="button" 
+                      className="button is-light" 
+                      onClick={() => setIsAddingRecord(false)}
+                      disabled={isLoading}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          )}
+          
+          {asset.serviceSchedule?.serviceRecords && asset.serviceSchedule.serviceRecords.length === 0 ? (
+            <div className="notification is-info is-light">
+              No service records found for this asset.
+            </div>
+          ) : (
+            <div className="table-container">
+              <table className="table is-fullwidth is-striped is-hoverable">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Provider</th>
+                    <th>Cost</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {asset.serviceSchedule?.serviceRecords.map(record => (
+                    <tr key={record.id}>
+                      <td>{formatDate(record.serviceDate)}</td>
+                      <td>{record.description}</td>
+                      <td>{record.provider || '-'}</td>
+                      <td>{formatCurrency(record.cost)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
