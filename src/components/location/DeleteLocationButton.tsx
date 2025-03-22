@@ -73,13 +73,13 @@ export default function DeleteLocationButton({ location }: { location: LocationW
     <>
       <button
         onClick={openModal}
-        className="button is-danger is-small"
+        className="button is-danger"
         aria-label={`Delete ${location.name}`}
       >
         <span className="icon is-small">
           <i className="fas fa-trash"></i>
         </span>
-        <span>Delete</span>
+        <span>Delete Location</span>
       </button>
 
       {/* Delete confirmation modal */}

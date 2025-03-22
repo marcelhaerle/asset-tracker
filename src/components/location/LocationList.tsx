@@ -36,7 +36,11 @@ export async function LocationList() {
           </Link>
         </div>
       ) : (
-        locations.map(location => <LocationListEntry key={location.id} location={location} />)
+        <div className="columns is-dekstop is-multiline">
+          {locations.map(location => (
+            <LocationListEntry key={location.id} location={location} />
+          ))}
+        </div>
       )}
     </>
   );
