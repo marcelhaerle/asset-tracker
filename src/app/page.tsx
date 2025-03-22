@@ -11,16 +11,43 @@ export default async function Home() {
     },
   });
 
-  const categories = await prisma.category.findMany();
-
   // Get service schedules that are due in the current month
   const today = new Date();
   const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
   const dueServiceSchedules = await prisma.serviceSchedule.findMany({
     where: {
+      AND: [
+        {
+          nextServiceDate: {
+            gte: today,
+          },
+        },
+        {
+          nextServiceDate: {
+            lte: endOfMonth,
+          },
+        },
+      ],
+      enabled: true,
+    },
+    include: {
+      asset: {
+        include: {
+          category: true,
+          location: true,
+        },
+      },
+    },
+    orderBy: {
+      nextServiceDate: 'asc',
+    },
+  });
+
+  const overdueServiceSchedules = await prisma.serviceSchedule.findMany({
+    where: {
       nextServiceDate: {
-        lte: endOfMonth,
+        lte: today,
       },
       enabled: true,
     },
@@ -120,6 +147,62 @@ export default async function Home() {
           </div>
         )}
 
+        {overdueServiceSchedules.length > 0 && (
+          <div className="block">
+            <div className="notification is-danger">
+              <h3 className="title is-4">
+                <span className="icon mr-2">
+                  <i className="fas fa-exclamation-triangle"></i>
+                </span>
+                Service Overdue
+              </h3>
+              <div className="table-container">
+                <table className="table is-fullwidth">
+                  <thead>
+                    <tr>
+                      <th>Asset</th>
+                      <th>Service Due</th>
+                      <th>Category</th>
+                      <th>Location</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {overdueServiceSchedules.map(schedule => (
+                      <tr key={schedule.id}>
+                        <td>
+                          {schedule.asset.name} ({schedule.asset.assetTag})
+                        </td>
+                        <td>
+                          <strong
+                            className={
+                              new Date(schedule.nextServiceDate) < new Date()
+                                ? 'has-text-danger'
+                                : ''
+                            }
+                          >
+                            {new Date(schedule.nextServiceDate).toLocaleDateString()}
+                          </strong>
+                        </td>
+                        <td>{schedule.asset.category.name}</td>
+                        <td>{schedule.asset.location?.name || '-'}</td>
+                        <td>
+                          <a
+                            href={`/assets/${schedule.asset.id}`}
+                            className="button is-small is-info"
+                          >
+                            View Asset
+                          </a>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="block mt-6">
           <div className="box">
             <h3 className="title is-4">Asset Overview</h3>
@@ -154,30 +237,7 @@ export default async function Home() {
 
         <div className="block mt-6">
           <div className="box">
-            <h3 className="title is-4">Asset Categories</h3>
-            <div className="columns is-multiline">
-              {categories.map(category => (
-                <div key={category.id} className="column is-one-quarter">
-                  <div className="card">
-                    <div className="card-content">
-                      <p className="title is-5">{category.name}</p>
-                      <p className="subtitle is-6">{category.description}</p>
-                    </div>
-                    <footer className="card-footer">
-                      <a href={`/assets?category=${category.id}`} className="card-footer-item">
-                        View Assets
-                      </a>
-                    </footer>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="block mt-6">
-          <div className="box">
-            <h3 className="title is-4">Asset Listing</h3>
+            <h3 className="title is-4">Asset in Stock</h3>
             <div className="table-container">
               <table className="table is-fullwidth is-striped is-hoverable">
                 <thead>
@@ -191,24 +251,26 @@ export default async function Home() {
                   </tr>
                 </thead>
                 <tbody>
-                  {assets.map(asset => (
-                    <tr key={asset.id}>
-                      <td>{asset.assetTag}</td>
-                      <td>{asset.name}</td>
-                      <td>{asset.category.name}</td>
-                      <td>
-                        <span className={`tag ${getStatusClassName(asset.status)}`}>
-                          {asset.status.replace('_', ' ')}
-                        </span>
-                      </td>
-                      <td>{asset.location?.name || '-'}</td>
-                      <td>
-                        {asset.assignedTo
-                          ? `${asset.assignedTo.firstName} ${asset.assignedTo.lastName}`
-                          : '-'}
-                      </td>
-                    </tr>
-                  ))}
+                  {assets
+                    .filter(asset => asset.status === 'AVAILABLE')
+                    .map(asset => (
+                      <tr key={asset.id}>
+                        <td>{asset.assetTag}</td>
+                        <td>{asset.name}</td>
+                        <td>{asset.category.name}</td>
+                        <td>
+                          <span className={`tag ${getStatusClassName(asset.status)}`}>
+                            {asset.status.replace('_', ' ')}
+                          </span>
+                        </td>
+                        <td>{asset.location?.name || '-'}</td>
+                        <td>
+                          {asset.assignedTo
+                            ? `${asset.assignedTo.firstName} ${asset.assignedTo.lastName}`
+                            : '-'}
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
