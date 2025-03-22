@@ -370,7 +370,7 @@ export default function EditAssetPage() {
                           placeholder="0.00"
                         />
                         <span className="icon is-small is-left">
-                          <i className="fas fa-dollar-sign"></i>
+                          <i className="fas fa-euro-sign"></i>
                         </span>
                       </div>
                     </div>

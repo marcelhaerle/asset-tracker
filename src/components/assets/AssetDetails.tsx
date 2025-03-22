@@ -44,9 +44,9 @@ export default function AssetDetails({ asset }: { asset: AssetWithCategory }) {
 
   const formatCurrency = (amount: number | null) => {
     if (amount === null) return 'Not specified';
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('de', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'EUR',
     }).format(amount);
   };
 
