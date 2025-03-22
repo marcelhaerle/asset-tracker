@@ -82,34 +82,36 @@ export default function AssetTable({ categoryId }: AssetTableProps) {
             </tr>
           </thead>
           <tbody>
-            {filteredAssets.map(asset => (
-              <tr key={asset.id}>
-                <td>{asset.assetTag}</td>
-                <td>{asset.name}</td>
-                <td>{asset.category.name}</td>
-                <td>
-                  <span className={`tag ${getStatusClassName(asset.status)}`}>
-                    {asset.status.replace('_', ' ')}
-                  </span>
-                </td>
-                <td>{asset.location?.name || '-'}</td>
-                <td>
-                  {asset.assignedTo
-                    ? `${asset.assignedTo.firstName} ${asset.assignedTo.lastName}`
-                    : '-'}
-                </td>
-                <td>
-                  <div className="buttons are-small">
-                    <Link href={`/assets/${asset.id}`} className="button is-info">
-                      View
-                    </Link>
-                    <Link href={`/assets/${asset.id}/edit`} className="button is-warning">
-                      Edit
-                    </Link>
-                  </div>
-                </td>
-              </tr>
-            ))}
+            {filteredAssets
+              .sort((a1, a2) => a1.assetTag.localeCompare(a2.assetTag))
+              .map(asset => (
+                <tr key={asset.id}>
+                  <td>{asset.assetTag}</td>
+                  <td>{asset.name}</td>
+                  <td>{asset.category.name}</td>
+                  <td>
+                    <span className={`tag ${getStatusClassName(asset.status)}`}>
+                      {asset.status.replace('_', ' ')}
+                    </span>
+                  </td>
+                  <td>{asset.location?.name || '-'}</td>
+                  <td>
+                    {asset.assignedTo
+                      ? `${asset.assignedTo.firstName} ${asset.assignedTo.lastName}`
+                      : '-'}
+                  </td>
+                  <td>
+                    <div className="buttons are-small">
+                      <Link href={`/assets/${asset.id}`} className="button is-info">
+                        View
+                      </Link>
+                      <Link href={`/assets/${asset.id}/edit`} className="button is-warning">
+                        Edit
+                      </Link>
+                    </div>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
