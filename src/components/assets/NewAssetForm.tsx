@@ -1,8 +1,8 @@
 'use client';
 
-import { FormEvent, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Toast from '@/components/Toast';
+import Toast from '../Toast';
+import { FormEvent, useEffect, useState } from 'react';
 
 type Category = {
   id: string;
@@ -21,9 +21,13 @@ type Employee = {
   employeeId: string;
 };
 
-export default function NewAssetPage() {
+interface NewAssetFormProps {
+  suggestAssetTag: string;
+}
+
+export default function NewAssetForm({ suggestAssetTag }: NewAssetFormProps) {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
@@ -36,7 +40,7 @@ export default function NewAssetPage() {
 
   const [formData, setFormData] = useState({
     name: '',
-    assetTag: '',
+    assetTag: suggestAssetTag,
     serialNumber: '',
     description: '',
     model: '',
@@ -88,24 +92,6 @@ export default function NewAssetPage() {
 
     fetchData();
   }, []);
-
-  useEffect(() => {
-    const fetchSuggestedAssetTag = async () => {
-      if (formData.categoryId) {
-        const response = await fetch(`/api/categories/${formData.categoryId}/suggest`);
-        const data = await response.json();
-
-        if (response.ok) {
-          setFormData(prev => ({
-            ...prev,
-            assetTag: data.suggestedAssetTag || '',
-          }));
-        }
-      }
-    };
-
-    fetchSuggestedAssetTag();
-  }, [formData.categoryId]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -250,7 +236,7 @@ export default function NewAssetPage() {
                       name="assetTag"
                       value={formData.assetTag}
                       onChange={handleChange}
-                      placeholder="e.g. LAP-0001, select category to generate"
+                      placeholder="e.g. LAP-0001"
                       required
                     />
                   </div>
