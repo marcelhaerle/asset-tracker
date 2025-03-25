@@ -9,6 +9,7 @@ jest.mock('./prisma', () => ({
     },
     asset: {
       findMany: jest.fn(),
+      findUnique: jest.fn(),
     },
   },
 }));
@@ -90,6 +91,7 @@ describe('suggestAssetTag', () => {
     });
 
     (prisma.asset.findMany as jest.Mock).mockResolvedValue([{ assetTag: 'LAP-0123' }]);
+    (prisma.asset.findUnique as jest.Mock).mockResolvedValue(null);
 
     const result = await suggestAssetTag('category-id');
 
@@ -146,6 +148,7 @@ test('maintains padding for large number increments', async () => {
   });
 
   (prisma.asset.findMany as jest.Mock).mockResolvedValue([{ assetTag: 'DEV-0999' }]);
+  (prisma.asset.findUnique as jest.Mock).mockResolvedValue(null);
 
   const result = await suggestAssetTag('category-id');
 
