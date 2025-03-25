@@ -41,10 +41,11 @@ model Asset {
 }
 
 model Category {
-  id          String  @id @default(uuid())
-  name        String  @unique
-  description String?
-  assets      Asset[]
+  id             String  @id @default(uuid())
+  name           String  @unique
+  description    String?
+  assetTagPrefix String?
+  assets         Asset[]
 }
 
 model Location {

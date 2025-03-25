@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 export interface CategoryFormData {
   name: string;
   description: string;
+  assetTagPrefix: string;
 }
 
 interface CategoryFormProps {
@@ -13,6 +14,7 @@ interface CategoryFormProps {
     id: string;
     name: string;
     description: string | null;
+    assetTagPrefix: string | null;
   };
   mode: 'create' | 'edit';
 }
@@ -22,6 +24,7 @@ export default function CategoryForm({ initialData, mode }: CategoryFormProps) {
   const [formData, setFormData] = useState<CategoryFormData>({
     name: initialData?.name || '',
     description: initialData?.description || '',
+    assetTagPrefix: initialData?.assetTagPrefix || '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +34,7 @@ export default function CategoryForm({ initialData, mode }: CategoryFormProps) {
       setFormData({
         name: initialData.name,
         description: initialData.description || '',
+        assetTagPrefix: initialData.assetTagPrefix || '',
       });
     }
   }, [initialData]);
@@ -93,6 +97,24 @@ export default function CategoryForm({ initialData, mode }: CategoryFormProps) {
             type="text"
             placeholder="Enter category name"
             value={formData.name}
+            onChange={handleChange}
+            required
+          />
+        </div>
+      </div>
+
+      <div className="field">
+        <label className="label" htmlFor="assetTagPrefix">
+          Asset Tag Prefix
+        </label>
+        <div className="control">
+          <input
+            id="assetTagPrefix"
+            name="assetTagPrefix"
+            className="input"
+            type="text"
+            placeholder="Enter asset tag prefix"
+            value={formData.assetTagPrefix}
             onChange={handleChange}
             required
           />

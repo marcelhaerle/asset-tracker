@@ -9,6 +9,7 @@ interface Category {
   id: string;
   name: string;
   description: string | null;
+  assetTagPrefix: string | null;
 }
 
 export default function CategoryList() {
@@ -53,6 +54,7 @@ export default function CategoryList() {
             <tr>
               <th>Name</th>
               <th>Description</th>
+              <th>Asset Tag Prefix</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -68,6 +70,7 @@ export default function CategoryList() {
                 <tr key={category.id}>
                   <td>{category.name}</td>
                   <td>{category.description || '-'}</td>
+                  <td>{category.assetTagPrefix || '-'}</td>
                   <td>
                     <div className="buttons are-small">
                       <Link href={`/categories/edit/${category.id}`} className="button is-info">

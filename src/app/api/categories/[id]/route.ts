@@ -24,7 +24,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   try {
     const id = (await params).id;
     const body = await request.json();
-    const { name, description } = body;
+    const { name, description, assetTagPrefix } = body;
 
     if (!name) {
       return NextResponse.json({ error: 'Category name is required' }, { status: 400 });
@@ -43,6 +43,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       data: {
         name,
         description,
+        assetTagPrefix,
       },
     });
 
